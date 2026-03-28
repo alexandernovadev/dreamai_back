@@ -67,15 +67,16 @@ export class AiSuggestionsService {
     text: string,
     locale?: string,
   ): Promise<SuggestEntitiesResult> {
-    const apiKey = process.env.OPENAI_API_KEY?.trim();
+    const apiKey =
+      process.env.AI_API_KEY?.trim() || process.env.OPENAI_API_KEY?.trim();
     if (!apiKey) {
       throw new ServiceUnavailableException(
-        'AI suggestions are not configured (set OPENAI_API_KEY).',
+        'AI suggestions are not configured (set AI_API_KEY or OPENAI_API_KEY).',
       );
     }
-    const model = process.env.AI_MODEL?.trim() || 'gpt-4o-mini';
+    const model = process.env.AI_MODEL?.trim() || 'deepseek-chat';
     const baseUrl = (
-      process.env.AI_BASE_URL?.trim() || 'https://api.openai.com/v1'
+      process.env.AI_BASE_URL?.trim() || 'https://api.deepseek.com/v1'
     ).replace(/\/$/, '');
 
     const userContent =

@@ -20,9 +20,9 @@ Es la **API HTTP** de Dreamia: guardar y consultar **sesiones de sueño**, **cat
 |----------|-----------|
 | `DATABASE_URL` | Cadena de conexión a MongoDB (incluye base y parámetros como `directConnection` si aplica). |
 | `PORT` | Puerto donde escucha la app (opcional). |
-| `OPENAI_API_KEY` | Clave del proveedor de IA para `POST /ai/suggest-entities` (opcional; sin ella ese endpoint responde 503). |
-| `AI_MODEL` | Modelo de chat (opcional; por defecto `gpt-4o-mini`). |
-| `AI_BASE_URL` | URL base compatible con OpenAI (opcional; por defecto `https://api.openai.com/v1`). |
+| `AI_API_KEY` | Clave de **DeepSeek** para `POST /ai/suggest-entities` (opcional; sin clave ese endpoint responde 503). También se acepta `OPENAI_API_KEY` como alias. |
+| `AI_MODEL` | Modelo de chat (opcional; por defecto `deepseek-chat`). |
+| `AI_BASE_URL` | URL base compatible con OpenAI (opcional; por defecto `https://api.deepseek.com/v1`). |
 
 Copia `.env.example` a `.env` y rellena los valores en tu máquina o en el despliegue. Detalle de uso del endpoint de IA: **[Sugerencias de entidades con IA](ai-suggestions.md)**.
 
@@ -73,7 +73,7 @@ Rutas relativas a la raíz del servicio (sin incluir dominio ni puerto).
 
 | Método | Ruta | Descripción breve |
 |--------|------|-------------------|
-| POST | `/ai/suggest-entities` | A partir de texto libre del sueño, sugiere personajes, lugares y objetos (requiere `OPENAI_API_KEY`). |
+| POST | `/ai/suggest-entities` | A partir de texto libre del sueño, sugiere personajes, lugares y objetos (requiere `AI_API_KEY` o `OPENAI_API_KEY`; por defecto DeepSeek). |
 
 Ver cuerpo de petición, respuesta y flujo recomendado en **[ai-suggestions.md](ai-suggestions.md)**.
 
@@ -160,6 +160,6 @@ Misma forma con prefijo `/catalog/objects` y la subruta `.../{id}/dream-sessions
 
 - Sin autenticación ni multi-tenant.
 - Sin tests automatizados en el flujo actual del repo.
-- Las sugerencias de IA dependen de un **proveedor externo** y de `OPENAI_API_KEY`; el texto del sueño sale del servidor hacia ese proveedor.
+- Las sugerencias de IA dependen de un **proveedor externo** (por defecto **DeepSeek**) y de `AI_API_KEY` (o `OPENAI_API_KEY`); el texto del sueño sale del servidor hacia ese proveedor.
 
 Si ampliáis producto (usuarios, cuotas, colas, etc.), esta guía habrá de actualizarse en las mismas secciones.

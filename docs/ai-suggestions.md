@@ -6,11 +6,14 @@ Este endpoint ayuda en el **refinamiento** del sueño: a partir de texto libre (
 
 ## Requisitos en el servidor
 
+El backend está pensado para **[DeepSeek](https://api-docs.deepseek.com/)** (API compatible con OpenAI: `POST /v1/chat/completions`).
+
 | Variable | Obligatoria | Descripción |
 |----------|-------------|-------------|
-| `OPENAI_API_KEY` | Sí, para usar el endpoint | Clave de la API de OpenAI (o compatible). Si falta, el servidor responde **503**. |
-| `AI_MODEL` | No | Modelo de chat (por defecto `gpt-4o-mini`). |
-| `AI_BASE_URL` | No | URL base del proveedor (por defecto `https://api.openai.com/v1`). Útil para proxies compatibles con OpenAI. |
+| `AI_API_KEY` | Sí, para usar el endpoint | Clave de la API de DeepSeek. Si falta, el servidor responde **503**. |
+| `OPENAI_API_KEY` | No | Alias opcional: si no definís `AI_API_KEY`, se usa este nombre (útil si ya tenías scripts con el nombre antiguo). |
+| `AI_MODEL` | No | Modelo de chat (por defecto `deepseek-chat`; otro ejemplo oficial: `deepseek-reasoner`). |
+| `AI_BASE_URL` | No | URL base (por defecto `https://api.deepseek.com/v1`). Para otro proveedor compatible, cambiá base y modelo (ej. OpenAI: `https://api.openai.com/v1` y `gpt-4o-mini`). |
 
 Copiá los valores en `.env` (partiendo de `.env.example`).
 
@@ -103,12 +106,12 @@ El prompt del servidor pide **no** hacer interpretación terapéutica; solo etiq
 | Código | Situación |
 |--------|-----------|
 | **400** | Cuerpo inválido (validación: `text` vacío, demasiado largo, campos no permitidos). |
-| **503** | `OPENAI_API_KEY` no configurada. |
+| **503** | `AI_API_KEY` / `OPENAI_API_KEY` no configuradas. |
 | **502** | Fallo del proveedor de IA (red, clave, cuota, respuesta no JSON). |
 
 ---
 
 ## Privacidad y coste
 
-- El texto del sueño se envía al **proveedor** configurado (`AI_BASE_URL`). Evaluá políticas de privacidad y región antes de producción.
+- El texto del sueño se envía al **proveedor** configurado (por defecto **DeepSeek**, `api.deepseek.com`). Evaluá políticas de privacidad y región antes de producción.
 - Cada llamada consume tokens; conviene límites en el cliente y textos razonables (el servidor limita `text` a 16k caracteres).
