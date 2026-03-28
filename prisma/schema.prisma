@@ -1,0 +1,115 @@
+// Dreamia — MongoDB (MVP sin auth). Sueños con segmentos JSON + IDs de catálogo denormalizados para consultas.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+enum DreamSessionStatus {
+  DRAFT
+  REFINING
+  STRUCTURED
+  REFLECTIONS_DONE
+}
+
+enum DreamKind {
+  NIGHTMARE
+  ORDINARY
+  FANTASY
+  LUCID
+  ANXIOUS
+  SURREAL
+  RECURRENT
+  MIXED
+  UNKNOWN
+}
+
+enum Archetype {
+  SHADOW
+  ANIMA_ANIMUS
+  WISE_FIGURE
+  PERSONA
+  UNKNOWN
+}
+
+enum LocationSetting {
+  URBAN
+  NATURE
+  INDOOR
+  ABSTRACT
+}
+
+/// Personaje recurrente (dashboard: listar y enlazar sueños donde aparece).
+model CatalogCharacter {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  name        String
+  description String
+  isKnown     Boolean   @default(false)
+  archetype   Archetype
+  imageUri    String?
+
+  @@map("catalog_characters")
+}
+
+/// Lugar recurrente.
+model CatalogLocation {
+  id          String          @id @default(auto()) @map("_id") @db.ObjectId
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  isFamiliar  Boolean         @default(false)
+  setting     LocationSetting
+  name        String
+  description String
+  imageUri    String?
+
+  @@map("catalog_locations")
+}
+
+/// Objeto onírico recurrente.
+model CatalogDreamObject {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  name        String
+  description String?
+  imageUri    String?
+
+  @@map("catalog_dream_objects")
+}
+
+/// Evento de vida o calendario (resuelve `relatedLifeEventIds` en sesiones).
+model LifeEvent {
+  id         String    @id @default(auto()) @map("_id") @db.ObjectId
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  title      String
+  note       String?
+  occurredAt DateTime?
+
+  @@map("life_events")
+}
+
+model DreamSession {
+  id                  String             @id @default(auto()) @map("_id") @db.ObjectId
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+  timestamp           DateTime
+  status              DreamSessionStatus
+  dreamKind           DreamKind
+  rawNarrative        String?
+  relatedLifeEventIds String[]           @default([])
+  userThought         String?
+  dreams              Json               @default("[]")
+  /// Derivado de `dreams` al guardar (búsqueda por catálogo).
+  catalogCharacterIds String[]           @default([])
+  catalogLocationIds  String[]           @default([])
+  catalogObjectIds    String[]           @default([])
+
+  @@map("dream_sessions")
+}
