@@ -1,13 +1,12 @@
 # Flujo de una sesión de sueño (diagrama de secuencia)
 
-Describe cómo interactúan el usuario, la app, la IA opcional y el catálogo de personajes a lo largo de `DreamSessionStatus`.
+Describe cómo interactúan el usuario, la app y el catálogo de personajes a lo largo de `DreamSessionStatus`.
 
 ```mermaid
 sequenceDiagram
     autonumber
     actor U as Usuario
     participant App as App (DreamSession)
-    participant IA as IA (opcional)
     participant Cat as Catálogo / DB
 
     Note over U,Cat: Paso 1 — Captura (Draft)
@@ -18,11 +17,6 @@ sequenceDiagram
     Note over U,Cat: Paso 2 — Refinamiento (Refining)
     U->>App: Pasa a refinamiento / segmenta / añade feelings
     App->>App: status = Refining
-    opt Sugerencias automáticas
-        App->>IA: Texto del sueño (o segmento)
-        IA-->>App: Propuesta: personajes, lugares, objetos, etiquetas
-        App-->>U: Muestra sugerencias (editable)
-    end
     U->>App: Acepta, corrige o crea todo manualmente
     opt Personaje ya visto antes
         U->>Cat: Busca o crea personaje recurrente
@@ -48,7 +42,7 @@ sequenceDiagram
 | Estado en el diagrama | `DreamSessionStatus` | Idea |
 |----------------------|----------------------|------|
 | Captura | `Draft` | Texto; `analysis` puede faltar. |
-| Refinamiento | `Refining` | Extracción manual o asistida; `analysis` se va llenando. |
+| Refinamiento | `Refining` | Extracción manual; `analysis` se va llenando. |
 | Cierre estructural | `Structured` | Entidades coherentes; listo para patrones / historial. |
 | Pensamiento | `ReflectionsDone` | `userThought` registrado (paso opcional según producto). |
 

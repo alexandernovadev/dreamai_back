@@ -32,7 +32,7 @@ export enum DreamKind {
 
 /**
  * Flujo de una entrada: texto → refinamiento/extracción → cierre estructural → tu reflexión.
- * La IA puede asistir en REFINING; tú validas y enlazas personajes del catálogo si aplica.
+ * En REFINING validas y enlazas personajes del catálogo si aplica.
  */
 export enum DreamSessionStatus {
   /** 1 — Solo captura: narrativa libre; aún no segmentas ni extraes entidades. */

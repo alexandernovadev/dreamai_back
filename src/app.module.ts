@@ -1,6 +1,4 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
-import { AiModule } from './ai/ai.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { CatalogModule } from './catalog/catalog.module';
@@ -9,14 +7,7 @@ import { LifeEventsModule } from './life-events/life-events.module';
 import { PrismaModule } from './prisma/prisma.module';
 
 @Module({
-  imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
-    PrismaModule,
-    DreamSessionsModule,
-    CatalogModule,
-    LifeEventsModule,
-    AiModule,
-  ],
+  imports: [PrismaModule, DreamSessionsModule, CatalogModule, LifeEventsModule],
   controllers: [AppController],
   providers: [AppService],
 })

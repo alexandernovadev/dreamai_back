@@ -8,7 +8,8 @@ Este repositorio es la **API y la lógica de servidor**; el cliente (móvil o we
 
 El modelo de producto vive en `docs/`:
 
-- **[Flujo de una sesión de sueño](docs/dream-workflow-sequence.md)** — estados (`Draft` → `Refining` → `Structured` → `ReflectionsDone`), IA opcional y catálogo de personajes.
+- **[Guía del backend (uso, rutas, entorno, sin código)](docs/GUIA-DREAMIA-BACK.md)** — qué hay y cómo usarlo.
+- **[Flujo de una sesión de sueño](docs/dream-workflow-sequence.md)** — estados (`Draft` → `Refining` → `Structured` → `ReflectionsDone`) y catálogo de personajes.
 - **Tipos TypeScript** (`docs/types/`) — sesiones, segmentos, personajes, lugares, objetos, emociones y clasificación (`DreamKind`, `DreamSessionStatus`).
 
 Sirven como contrato compartido con el front y como referencia al implementar endpoints y persistencia.
@@ -30,16 +31,6 @@ En los segmentos (`dreams` JSON), las apariciones enlazan con `catalogCharacterI
 - **REFLECTIONS_DONE**: **`userThought`** obligatorio (no vacío).
 - **`relatedLifeEventIds`**: cada id debe existir en **`/life-events`**.
 - Referencias **`catalogCharacterId` / `catalogLocationId` / `catalogObjectId`** en `dreams` deben existir en el catálogo correspondiente.
-
-### IA — DeepSeek (OpenAI-compatible)
-
-Se usa el paquete oficial **`openai`** con `baseURL` de DeepSeek (no la API de OpenAI salvo que cambies la URL y la clave).
-
-- Variables: `DEEPSEEK_API_KEY`, opcional `DEEPSEEK_BASE_URL` (por defecto `https://api.deepseek.com`), `DEEPSEEK_MODEL` (por defecto `deepseek-chat`; también existe `deepseek-reasoner`).
-- **`GET /ai/deepseek/status`** — `{ "configured": true|false }` según exista la clave.
-- **`POST /ai/deepseek/chat`** — cuerpo `{ "messages": [{ "role": "user"|"assistant"|"system", "content": "..." }], "model"?: "..." }`; devuelve la respuesta del proveedor (chat completions).
-
-Inyecta **`DeepseekService`** en otros módulos para llamadas desde dominio (p. ej. sugerencias de segmentos).
 
 ## Requisitos
 
