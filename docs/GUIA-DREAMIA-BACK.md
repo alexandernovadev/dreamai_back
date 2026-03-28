@@ -20,8 +20,11 @@ Es la **API HTTP** de Dreamia: guardar y consultar **sesiones de sueño**, **cat
 |----------|-----------|
 | `DATABASE_URL` | Cadena de conexión a MongoDB (incluye base y parámetros como `directConnection` si aplica). |
 | `PORT` | Puerto donde escucha la app (opcional). |
+| `OPENAI_API_KEY` | Clave del proveedor de IA para `POST /ai/suggest-entities` (opcional; sin ella ese endpoint responde 503). |
+| `AI_MODEL` | Modelo de chat (opcional; por defecto `gpt-4o-mini`). |
+| `AI_BASE_URL` | URL base compatible con OpenAI (opcional; por defecto `https://api.openai.com/v1`). |
 
-Copia `.env.example` a `.env` y rellena los valores en tu máquina o en el despliegue.
+Copia `.env.example` a `.env` y rellena los valores en tu máquina o en el despliegue. Detalle de uso del endpoint de IA: **[Sugerencias de entidades con IA](ai-suggestions.md)**.
 
 ---
 
@@ -65,6 +68,14 @@ Rutas relativas a la raíz del servicio (sin incluir dominio ni puerto).
 | Método | Ruta | Descripción breve |
 |--------|------|-------------------|
 | GET | `/` | Comprobación viva; respuesta de texto fija. |
+
+### IA (sugerencias, sin persistir)
+
+| Método | Ruta | Descripción breve |
+|--------|------|-------------------|
+| POST | `/ai/suggest-entities` | A partir de texto libre del sueño, sugiere personajes, lugares y objetos (requiere `OPENAI_API_KEY`). |
+
+Ver cuerpo de petición, respuesta y flujo recomendado en **[ai-suggestions.md](ai-suggestions.md)**.
 
 ### Sesiones de sueño
 
@@ -128,7 +139,8 @@ Misma forma con prefijo `/catalog/objects` y la subruta `.../{id}/dream-sessions
 
 1. Crear entradas de **catálogo** y **eventos de vida** que vayas a referenciar.
 2. Crear o ir actualizando **sesiones de sueño** pasando de borrador a refinamiento y luego a estructurado cuando el contenido esté listo.
-3. Usar los listados filtrados y las rutas `.../{id}/dream-sessions` para montar **enlaces** en un dashboard (de un ítem a las noches donde aparece).
+3. En **refinamiento**, opcionalmente llamar a **`POST /ai/suggest-entities`** con el texto del sueño para obtener sugerencias de entidades; el usuario las revisa y luego persistís con `PATCH` / catálogo como siempre.
+4. Usar los listados filtrados y las rutas `.../{id}/dream-sessions` para montar **enlaces** en un dashboard (de un ítem a las noches donde aparece).
 
 ---
 
@@ -138,6 +150,7 @@ Misma forma con prefijo `/catalog/objects` y la subruta `.../{id}/dream-sessions
 |-----------|-----------|
 | `docs/types/` | Tipos TypeScript del dominio (segmentos, entidades, enums). |
 | `docs/dream-workflow-sequence.md` | Flujo por estados y diagrama de secuencia. |
+| `docs/ai-suggestions.md` | Endpoint `POST /ai/suggest-entities`, variables de entorno y ejemplo de uso. |
 | `README.md` (raíz) | Resumen del proyecto, scripts y enlace a licencia. |
 | `prisma/schema.prisma` | Modelo persistido en Mongo (lectura humana del esquema). |
 
@@ -147,5 +160,6 @@ Misma forma con prefijo `/catalog/objects` y la subruta `.../{id}/dream-sessions
 
 - Sin autenticación ni multi-tenant.
 - Sin tests automatizados en el flujo actual del repo.
+- Las sugerencias de IA dependen de un **proveedor externo** y de `OPENAI_API_KEY`; el texto del sueño sale del servidor hacia ese proveedor.
 
 Si ampliáis producto (usuarios, cuotas, colas, etc.), esta guía habrá de actualizarse en las mismas secciones.

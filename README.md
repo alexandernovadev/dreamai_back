@@ -9,6 +9,7 @@ Este repositorio es la **API y la lógica de servidor**; el cliente (móvil o we
 El modelo de producto vive en `docs/`:
 
 - **[Guía del backend (uso, rutas, entorno, sin código)](docs/GUIA-DREAMIA-BACK.md)** — qué hay y cómo usarlo.
+- **[Sugerencias de entidades con IA](docs/ai-suggestions.md)** — `POST /ai/suggest-entities`, variables de entorno y flujo con el refinamiento.
 - **[Flujo de una sesión de sueño](docs/dream-workflow-sequence.md)** — estados (`Draft` → `Refining` → `Structured` → `ReflectionsDone`) y catálogo de personajes.
 - **Tipos TypeScript** (`docs/types/`) — sesiones, segmentos, personajes, lugares, objetos, emociones y clasificación (`DreamKind`, `DreamSessionStatus`).
 
@@ -17,6 +18,7 @@ Sirven como contrato compartido con el front y como referencia al implementar en
 ## API (MVP)
 
 - **`GET /`** — saludo comprobación.
+- **`POST /ai/suggest-entities`** — sugerencias de personajes, lugares y objetos a partir de texto libre (opcional; requiere `OPENAI_API_KEY`; ver [docs/ai-suggestions.md](docs/ai-suggestions.md)).
 - **`/dream-sessions`** — CRUD de sesiones; `GET` admite query `catalogCharacterId`, `catalogLocationId`, `catalogObjectId`, `lifeEventId` (AND de filtros).
 - **`/catalog/characters`**, **`/catalog/locations`**, **`/catalog/objects`** — CRUD de entradas de catálogo (Mongo `ObjectId` como `id`).
 - **`GET /catalog/.../:id/dream-sessions`** — sueños vinculados a esa entrada de catálogo.
@@ -43,7 +45,7 @@ En los segmentos (`dreams` JSON), las apariciones enlazan con `catalogCharacterI
 yarn install
 ```
 
-Copia `.env.example` a `.env` y ajusta `DATABASE_URL`. Mongo local: `docker compose up -d`, luego aplica el esquema:
+Copia `.env.example` a `.env` y ajusta `DATABASE_URL`. Para sugerencias de IA, añade `OPENAI_API_KEY` (ver [docs/ai-suggestions.md](docs/ai-suggestions.md)). Mongo local: `docker compose up -d`, luego aplica el esquema:
 
 ```bash
 yarn prisma:push
