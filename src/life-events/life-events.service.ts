@@ -1,57 +1,63 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
-import { PrismaService } from '../prisma/prisma.service';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { LifeEvent } from '../schemas/life-event.schema';
+import type { LifeEventDocument } from '../schemas/life-event.schema';
 import { CreateLifeEventDto } from './dto/create-life-event.dto';
 import { UpdateLifeEventDto } from './dto/update-life-event.dto';
 
 @Injectable()
 export class LifeEventsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    @InjectModel(LifeEvent.name)
+    private readonly model: Model<LifeEventDocument>,
+  ) {}
 
-  findAll() {
-    return this.prisma.lifeEvent.findMany({
-      orderBy: { createdAt: 'desc' },
-    });
+  async findAll() {
+    const docs = await this.model.find().sort({ createdAt: -1 }).exec();
+    return docs.map((d) => d.toJSON());
   }
 
   async findOne(id: string) {
-    const row = await this.prisma.lifeEvent.findUnique({ where: { id } });
-    if (!row) {
+    const doc = await this.model.findById(id).exec();
+    if (!doc) {
       throw new NotFoundException(`LifeEvent ${id} not found`);
     }
-    return row;
+    return doc.toJSON();
   }
 
-  create(dto: CreateLifeEventDto) {
-    return this.prisma.lifeEvent.create({
-      data: {
-        title: dto.title,
-        note: dto.note,
-        occurredAt: dto.occurredAt ? new Date(dto.occurredAt) : undefined,
-      },
+  async create(dto: CreateLifeEventDto) {
+    const created = await this.model.create({
+      title: dto.title,
+      note: dto.note,
+      occurredAt: dto.occurredAt ? new Date(dto.occurredAt) : undefined,
     });
+    return created.toJSON();
   }
 
   async update(id: string, dto: UpdateLifeEventDto) {
     await this.findOne(id);
-    const data: Prisma.LifeEventUpdateInput = {};
+    const $set: Record<string, unknown> = {};
     if (dto.title !== undefined) {
-      data.title = dto.title;
+      $set.title = dto.title;
     }
     if (dto.note !== undefined) {
-      data.note = dto.note;
+      $set.note = dto.note;
     }
     if (dto.occurredAt !== undefined) {
-      data.occurredAt = dto.occurredAt ? new Date(dto.occurredAt) : null;
+      $set.occurredAt = dto.occurredAt ? new Date(dto.occurredAt) : null;
     }
-    return this.prisma.lifeEvent.update({
-      where: { id },
-      data,
-    });
+    const doc = await this.model
+      .findByIdAndUpdate(id, { $set }, { new: true, runValidators: true })
+      .exec();
+    if (!doc) {
+      throw new NotFoundException(`LifeEvent ${id} not found`);
+    }
+    return doc.toJSON();
   }
 
   async remove(id: string) {
     await this.findOne(id);
-    return this.prisma.lifeEvent.delete({ where: { id } });
+    await this.model.findByIdAndDelete(id).exec();
   }
 }

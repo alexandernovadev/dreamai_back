@@ -1,6 +1,7 @@
 import type { Character } from "./character";
 import type { DreamObject } from "./dream-object";
 import type { Feeling } from "./feeling";
+import type { LifeEvent } from "./life-event";
 import type { Location } from "./location";
 
 export enum Perspective {
@@ -82,11 +83,8 @@ export interface DreamSession {
    * Opcional si ya pasaste todo a `dreams[].rawText`.
    */
   rawNarrative?: string;
-  /**
-   * Vínculos opcionales a “eventos” de vida o calendario (misma API en varios sueños).
-   * La app puede resolverlos contra una tabla de eventos aparte.
-   */
-  relatedLifeEventIds?: string[];
+  /** Ids de `LifeEvent` (`/life-events`); el mismo evento puede enlazarse en varias sesiones. */
+  relatedLifeEventIds?: LifeEvent['id'][];
   /** Paso 4 — qué te dejó el sueño, interpretación propia, preguntas. */
   userThought?: string;
   /**

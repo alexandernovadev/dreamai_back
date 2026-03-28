@@ -1,11 +1,20 @@
 import { Injectable, UnprocessableEntityException } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
 import {
   Archetype,
   DreamKind,
   DreamSessionStatus,
   LocationSetting,
-} from '@prisma/client';
-import { PrismaService } from '../prisma/prisma.service';
+} from '../domain/enums';
+import { CatalogCharacter } from '../schemas/catalog-character.schema';
+import type { CatalogCharacterDocument } from '../schemas/catalog-character.schema';
+import { CatalogDreamObject } from '../schemas/catalog-object.schema';
+import type { CatalogDreamObjectDocument } from '../schemas/catalog-object.schema';
+import { CatalogLocation } from '../schemas/catalog-location.schema';
+import type { CatalogLocationDocument } from '../schemas/catalog-location.schema';
+import { LifeEvent } from '../schemas/life-event.schema';
+import type { LifeEventDocument } from '../schemas/life-event.schema';
 import { extractCatalogIdsFromDreamsJson } from './dream-session-catalog.util';
 
 const PERSPECTIVE = new Set(['ACTOR', 'OBSERVER']);
@@ -41,7 +50,16 @@ export interface DreamSessionValidateInput {
 
 @Injectable()
 export class DreamSessionValidationService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    @InjectModel(CatalogCharacter.name)
+    private readonly catalogCharacterModel: Model<CatalogCharacterDocument>,
+    @InjectModel(CatalogLocation.name)
+    private readonly catalogLocationModel: Model<CatalogLocationDocument>,
+    @InjectModel(CatalogDreamObject.name)
+    private readonly catalogDreamObjectModel: Model<CatalogDreamObjectDocument>,
+    @InjectModel(LifeEvent.name)
+    private readonly lifeEventModel: Model<LifeEventDocument>,
+  ) {}
 
   async assertValid(input: DreamSessionValidateInput): Promise<void> {
     this.validateStatusAndKind(input);
@@ -142,7 +160,6 @@ export class DreamSessionValidationService {
       return;
     }
     if (!requireAnalysis) {
-      // DRAFT / REFINING: el análisis puede ir completándose poco a poco (docs).
       return;
     }
     this.validateAnalysis(s.analysis, `${path}.analysis`);
@@ -373,11 +390,10 @@ export class DreamSessionValidationService {
   }): Promise<void> {
     const uChar = [...new Set(derived.catalogCharacterIds)];
     if (uChar.length > 0) {
-      const rows = await this.prisma.catalogCharacter.findMany({
-        where: { id: { in: uChar } },
-        select: { id: true },
+      const n = await this.catalogCharacterModel.countDocuments({
+        _id: { $in: uChar },
       });
-      if (rows.length !== uChar.length) {
+      if (n !== uChar.length) {
         throw new UnprocessableEntityException(
           'Uno o más catalogCharacterId no existen en el catálogo.',
         );
@@ -385,11 +401,10 @@ export class DreamSessionValidationService {
     }
     const uLoc = [...new Set(derived.catalogLocationIds)];
     if (uLoc.length > 0) {
-      const rows = await this.prisma.catalogLocation.findMany({
-        where: { id: { in: uLoc } },
-        select: { id: true },
+      const n = await this.catalogLocationModel.countDocuments({
+        _id: { $in: uLoc },
       });
-      if (rows.length !== uLoc.length) {
+      if (n !== uLoc.length) {
         throw new UnprocessableEntityException(
           'Uno o más catalogLocationId no existen en el catálogo.',
         );
@@ -397,11 +412,10 @@ export class DreamSessionValidationService {
     }
     const uObj = [...new Set(derived.catalogObjectIds)];
     if (uObj.length > 0) {
-      const rows = await this.prisma.catalogDreamObject.findMany({
-        where: { id: { in: uObj } },
-        select: { id: true },
+      const n = await this.catalogDreamObjectModel.countDocuments({
+        _id: { $in: uObj },
       });
-      if (rows.length !== uObj.length) {
+      if (n !== uObj.length) {
         throw new UnprocessableEntityException(
           'Uno o más catalogObjectId no existen en el catálogo.',
         );
@@ -414,11 +428,10 @@ export class DreamSessionValidationService {
       return;
     }
     const unique = [...new Set(ids)];
-    const rows = await this.prisma.lifeEvent.findMany({
-      where: { id: { in: unique } },
-      select: { id: true },
+    const n = await this.lifeEventModel.countDocuments({
+      _id: { $in: unique },
     });
-    if (rows.length !== unique.length) {
+    if (n !== unique.length) {
       throw new UnprocessableEntityException(
         'Uno o más relatedLifeEventIds no existen (tabla life_events).',
       );

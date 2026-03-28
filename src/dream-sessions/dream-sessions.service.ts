@@ -3,10 +3,16 @@ import {
   NotFoundException,
   UnprocessableEntityException,
 } from '@nestjs/common';
-import { DreamSession, Prisma } from '@prisma/client';
-import { PrismaService } from '../prisma/prisma.service';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { DreamKind, DreamSessionStatus } from '../domain/enums';
+import { DreamSession } from '../schemas/dream-session.schema';
+import type { DreamSessionDocument } from '../schemas/dream-session.schema';
 import { extractCatalogIdsFromDreamsJson } from './dream-session-catalog.util';
-import { DreamSessionValidationService } from './dream-session-validation.service';
+import {
+  DreamSessionValidationService,
+  type DreamSessionValidateInput,
+} from './dream-session-validation.service';
 import { CreateDreamSessionDto } from './dto/create-dream-session.dto';
 import { DreamSessionsQueryDto } from './dto/dream-sessions-query.dto';
 import { UpdateDreamSessionDto } from './dto/update-dream-session.dto';
@@ -14,50 +20,42 @@ import { UpdateDreamSessionDto } from './dto/update-dream-session.dto';
 @Injectable()
 export class DreamSessionsService {
   constructor(
-    private readonly prisma: PrismaService,
+    @InjectModel(DreamSession.name)
+    private readonly dreamSessionModel: Model<DreamSessionDocument>,
     private readonly validation: DreamSessionValidationService,
   ) {}
 
-  findAll(query?: DreamSessionsQueryDto) {
-    const where: Prisma.DreamSessionWhereInput = {};
-    const and: Prisma.DreamSessionWhereInput[] = [];
+  async findAll(query?: DreamSessionsQueryDto) {
+    const filter: Record<string, unknown> = {};
+    const and: Record<string, unknown>[] = [];
     if (query?.catalogCharacterId) {
-      and.push({
-        catalogCharacterIds: { has: query.catalogCharacterId },
-      });
+      and.push({ catalogCharacterIds: query.catalogCharacterId });
     }
     if (query?.catalogLocationId) {
-      and.push({
-        catalogLocationIds: { has: query.catalogLocationId },
-      });
+      and.push({ catalogLocationIds: query.catalogLocationId });
     }
     if (query?.catalogObjectId) {
-      and.push({
-        catalogObjectIds: { has: query.catalogObjectId },
-      });
+      and.push({ catalogObjectIds: query.catalogObjectId });
     }
     if (query?.lifeEventId) {
-      and.push({
-        relatedLifeEventIds: { has: query.lifeEventId },
-      });
+      and.push({ relatedLifeEventIds: query.lifeEventId });
     }
     if (and.length > 0) {
-      where.AND = and;
+      filter.$and = and;
     }
-    return this.prisma.dreamSession.findMany({
-      where,
-      orderBy: { timestamp: 'desc' },
-    });
+    const docs = await this.dreamSessionModel
+      .find(filter)
+      .sort({ timestamp: -1 })
+      .exec();
+    return docs.map((d) => d.toJSON());
   }
 
   async findOne(id: string) {
-    const session = await this.prisma.dreamSession.findUnique({
-      where: { id },
-    });
-    if (!session) {
+    const doc = await this.dreamSessionModel.findById(id).exec();
+    if (!doc) {
       throw new NotFoundException(`DreamSession ${id} not found`);
     }
-    return session;
+    return doc.toJSON();
   }
 
   async create(dto: CreateDreamSessionDto) {
@@ -69,22 +67,20 @@ export class DreamSessionsService {
       relatedLifeEventIds: dto.relatedLifeEventIds ?? [],
       dreams: dreamsArray,
     });
-    const dreams = dreamsArray as Prisma.InputJsonValue;
-    const derived = extractCatalogIdsFromDreamsJson(dreams);
-    return this.prisma.dreamSession.create({
-      data: {
-        timestamp: new Date(dto.timestamp),
-        status: dto.status,
-        dreamKind: dto.dreamKind,
-        rawNarrative: dto.rawNarrative,
-        relatedLifeEventIds: dto.relatedLifeEventIds ?? [],
-        userThought: dto.userThought,
-        dreams,
-        catalogCharacterIds: derived.catalogCharacterIds,
-        catalogLocationIds: derived.catalogLocationIds,
-        catalogObjectIds: derived.catalogObjectIds,
-      },
+    const derived = extractCatalogIdsFromDreamsJson(dreamsArray);
+    const created = await this.dreamSessionModel.create({
+      timestamp: new Date(dto.timestamp),
+      status: dto.status,
+      dreamKind: dto.dreamKind,
+      rawNarrative: dto.rawNarrative,
+      relatedLifeEventIds: dto.relatedLifeEventIds ?? [],
+      userThought: dto.userThought,
+      dreams: dreamsArray,
+      catalogCharacterIds: derived.catalogCharacterIds,
+      catalogLocationIds: derived.catalogLocationIds,
+      catalogObjectIds: derived.catalogObjectIds,
     });
+    return created.toJSON();
   }
 
   async update(id: string, dto: UpdateDreamSessionDto) {
@@ -92,58 +88,61 @@ export class DreamSessionsService {
     const merged = this.mergeForValidation(existing, dto);
     await this.validation.assertValid(merged);
 
-    const data: Prisma.DreamSessionUpdateInput = {};
+    const $set: Record<string, unknown> = {};
     if (dto.timestamp !== undefined) {
-      data.timestamp = new Date(dto.timestamp);
+      $set.timestamp = new Date(dto.timestamp);
     }
     if (dto.status !== undefined) {
-      data.status = dto.status;
+      $set.status = dto.status;
     }
     if (dto.dreamKind !== undefined) {
-      data.dreamKind = dto.dreamKind;
+      $set.dreamKind = dto.dreamKind;
     }
     if (dto.rawNarrative !== undefined) {
-      data.rawNarrative = dto.rawNarrative;
+      $set.rawNarrative = dto.rawNarrative;
     }
     if (dto.relatedLifeEventIds !== undefined) {
-      data.relatedLifeEventIds = { set: dto.relatedLifeEventIds };
+      $set.relatedLifeEventIds = dto.relatedLifeEventIds;
     }
     if (dto.userThought !== undefined) {
-      data.userThought = dto.userThought;
+      $set.userThought = dto.userThought;
     }
     if (dto.dreams !== undefined) {
-      const dreams = dto.dreams as Prisma.InputJsonValue;
-      data.dreams = dreams;
+      const dreams = this.toDreamArray(dto.dreams);
+      $set.dreams = dreams;
       const derived = extractCatalogIdsFromDreamsJson(dreams);
-      data.catalogCharacterIds = { set: derived.catalogCharacterIds };
-      data.catalogLocationIds = { set: derived.catalogLocationIds };
-      data.catalogObjectIds = { set: derived.catalogObjectIds };
+      $set.catalogCharacterIds = derived.catalogCharacterIds;
+      $set.catalogLocationIds = derived.catalogLocationIds;
+      $set.catalogObjectIds = derived.catalogObjectIds;
     }
-    return this.prisma.dreamSession.update({
-      where: { id },
-      data,
-    });
+
+    const doc = await this.dreamSessionModel
+      .findByIdAndUpdate(id, { $set }, { new: true, runValidators: true })
+      .exec();
+    if (!doc) {
+      throw new NotFoundException(`DreamSession ${id} not found`);
+    }
+    return doc.toJSON();
   }
 
   async remove(id: string) {
     await this.findOne(id);
-    return this.prisma.dreamSession.delete({
-      where: { id },
-    });
+    await this.dreamSessionModel.findByIdAndDelete(id).exec();
   }
 
   private mergeForValidation(
-    existing: DreamSession,
+    existing: Record<string, unknown>,
     dto: UpdateDreamSessionDto,
-  ) {
+  ): DreamSessionValidateInput {
     return {
-      status: dto.status ?? existing.status,
-      dreamKind: dto.dreamKind ?? existing.dreamKind,
+      status: (dto.status ?? existing.status) as DreamSessionStatus,
+      dreamKind: (dto.dreamKind ?? existing.dreamKind) as DreamKind,
       userThought:
-        dto.userThought !== undefined ? dto.userThought : existing.userThought,
-      relatedLifeEventIds: dto.relatedLifeEventIds ?? [
-        ...existing.relatedLifeEventIds,
-      ],
+        dto.userThought !== undefined
+          ? dto.userThought
+          : (existing.userThought as string | null | undefined),
+      relatedLifeEventIds:
+        dto.relatedLifeEventIds ?? (existing.relatedLifeEventIds as string[]),
       dreams:
         dto.dreams !== undefined
           ? this.toDreamArray(dto.dreams)
@@ -161,7 +160,7 @@ export class DreamSessionsService {
     return value;
   }
 
-  private jsonToDreamArray(json: Prisma.JsonValue): unknown[] {
+  private jsonToDreamArray(json: unknown): unknown[] {
     if (json === null || json === undefined) {
       return [];
     }

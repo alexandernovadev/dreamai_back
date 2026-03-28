@@ -1,4 +1,4 @@
-import { LocationSetting } from '@prisma/client';
+import { LocationSetting } from '../../domain/enums';
 import { IsBoolean, IsEnum, IsOptional, IsString } from 'class-validator';
 
 export class CreateCatalogLocationDto {

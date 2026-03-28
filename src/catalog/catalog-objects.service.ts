@@ -1,50 +1,53 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { CatalogDreamObject } from '../schemas/catalog-object.schema';
+import type { CatalogDreamObjectDocument } from '../schemas/catalog-object.schema';
 import { CreateCatalogObjectDto } from './dto/create-catalog-object.dto';
 import { UpdateCatalogObjectDto } from './dto/update-catalog-object.dto';
 
 @Injectable()
 export class CatalogObjectsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    @InjectModel(CatalogDreamObject.name)
+    private readonly model: Model<CatalogDreamObjectDocument>,
+  ) {}
 
-  findAll() {
-    return this.prisma.catalogDreamObject.findMany({
-      orderBy: { name: 'asc' },
-    });
+  async findAll() {
+    const docs = await this.model.find().sort({ name: 1 }).exec();
+    return docs.map((d) => d.toJSON());
   }
 
   async findOne(id: string) {
-    const row = await this.prisma.catalogDreamObject.findUnique({
-      where: { id },
-    });
-    if (!row) {
+    const doc = await this.model.findById(id).exec();
+    if (!doc) {
       throw new NotFoundException(`CatalogDreamObject ${id} not found`);
     }
-    return row;
+    return doc.toJSON();
   }
 
-  create(dto: CreateCatalogObjectDto) {
-    return this.prisma.catalogDreamObject.create({
-      data: {
-        name: dto.name,
-        description: dto.description,
-        imageUri: dto.imageUri,
-      },
+  async create(dto: CreateCatalogObjectDto) {
+    const created = await this.model.create({
+      name: dto.name,
+      description: dto.description,
+      imageUri: dto.imageUri,
     });
+    return created.toJSON();
   }
 
   async update(id: string, dto: UpdateCatalogObjectDto) {
     await this.findOne(id);
-    return this.prisma.catalogDreamObject.update({
-      where: { id },
-      data: dto,
-    });
+    const doc = await this.model
+      .findByIdAndUpdate(id, { $set: dto }, { new: true, runValidators: true })
+      .exec();
+    if (!doc) {
+      throw new NotFoundException(`CatalogDreamObject ${id} not found`);
+    }
+    return doc.toJSON();
   }
 
   async remove(id: string) {
     await this.findOne(id);
-    return this.prisma.catalogDreamObject.delete({
-      where: { id },
-    });
+    await this.model.findByIdAndDelete(id).exec();
   }
 }

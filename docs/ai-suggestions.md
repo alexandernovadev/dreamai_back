@@ -76,6 +76,8 @@ JSON con tres listas (pueden estar vacías):
 
 ### Significado de campos (alineado a `docs/types/`)
 
+No incluye **eventos de vida**: esos se gestionan aparte (`/life-events` y `relatedLifeEventIds` en la sesión; ver `docs/types/life-event.ts`).
+
 - **`characters`**
   - `archetype`: uno de `SHADOW`, `ANIMA_ANIMUS`, `WISE_FIGURE`, `PERSONA`, `UNKNOWN` (mismo criterio que `Archetype` en `character.ts`).
   - `isKnown`: si la figura se reconoce como alguien de la vida despierta.
@@ -96,6 +98,7 @@ Valores desconocidos o mal formados del modelo se **normalizan** en servidor (p.
 3. Mostrar sugerencias; el usuario acepta, corrige o ignora.
 4. Para persistir, generá ids locales (`crypto.randomUUID()` o el esquema que use el cliente) y construí `DreamSegment.analysis.entities` según `docs/types/dream.ts`.
 5. Si un personaje coincide con el **catálogo**, enlazá `catalogCharacterId` (y análogo para lugares/objetos) antes de `PATCH /dream-sessions/:id`.
+6. Los **eventos de vida** (`relatedLifeEventIds`) son independientes: creá o elegí filas en `/life-events` y guardá solo los ids en la sesión.
 
 El prompt del servidor pide **no** hacer interpretación terapéutica; solo etiquetado de entidades.
 

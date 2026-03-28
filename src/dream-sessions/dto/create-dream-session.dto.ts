@@ -1,4 +1,4 @@
-import { DreamKind, DreamSessionStatus } from '@prisma/client';
+import { DreamKind, DreamSessionStatus } from '../../domain/enums';
 import { Type } from 'class-transformer';
 import {
   IsArray,

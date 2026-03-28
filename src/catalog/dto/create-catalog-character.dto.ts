@@ -1,4 +1,4 @@
-import { Archetype } from '@prisma/client';
+import { Archetype } from '../../domain/enums';
 import { IsBoolean, IsEnum, IsOptional, IsString } from 'class-validator';
 
 export class CreateCatalogCharacterDto {

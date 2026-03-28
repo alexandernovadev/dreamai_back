@@ -11,7 +11,7 @@ El modelo de producto vive en `docs/`:
 - **[Guía del backend (uso, rutas, entorno, sin código)](docs/GUIA-DREAMIA-BACK.md)** — qué hay y cómo usarlo.
 - **[Sugerencias de entidades con IA](docs/ai-suggestions.md)** — `POST /ai/suggest-entities`, variables de entorno y flujo con el refinamiento.
 - **[Flujo de una sesión de sueño](docs/dream-workflow-sequence.md)** — estados (`Draft` → `Refining` → `Structured` → `ReflectionsDone`) y catálogo de personajes.
-- **Tipos TypeScript** (`docs/types/`) — sesiones, segmentos, personajes, lugares, objetos, emociones y clasificación (`DreamKind`, `DreamSessionStatus`).
+- **Tipos TypeScript** (`docs/types/`) — sesiones, segmentos, personajes, lugares, objetos, emociones, **eventos de vida** (`LifeEvent`) y clasificación (`DreamKind`, `DreamSessionStatus`). Índice: [docs/README.md](docs/README.md).
 
 Sirven como contrato compartido con el front y como referencia al implementar endpoints y persistencia.
 
@@ -24,7 +24,7 @@ Sirven como contrato compartido con el front y como referencia al implementar en
 - **`GET /catalog/.../:id/dream-sessions`** — sueños vinculados a esa entrada de catálogo.
 - **`/life-events`** — CRUD de eventos de vida (`title`, `note`, `occurredAt`); **`GET /life-events/:id/dream-sessions`** — sueños que referencian ese id en `relatedLifeEventIds`.
 
-En los segmentos (`dreams` JSON), las apariciones enlazan con `catalogCharacterId`, `catalogLocationId`, `catalogObjectId`; al guardar la sesión se rellenan los arrays `catalog*Ids` en el documento para búsquedas rápidas.
+En los segmentos (`dreams` JSON), las apariciones enlazan con `catalogCharacterId`, `catalogLocationId`, `catalogObjectId`; al guardar la sesión se rellenan los arrays `catalog*Ids` en el documento para búsquedas rápidas. A nivel de sesión, `relatedLifeEventIds` apunta por id a **`/life-events`** (sin objeto embebido; resolvelos en el cliente o con la API).
 
 ### Reglas alineadas a `docs/` (validación en servidor)
 
@@ -45,10 +45,10 @@ En los segmentos (`dreams` JSON), las apariciones enlazan con `catalogCharacterI
 yarn install
 ```
 
-Copia `.env.example` a `.env` y ajusta `DATABASE_URL`. Para sugerencias de IA, añade `AI_API_KEY` de DeepSeek (ver [docs/ai-suggestions.md](docs/ai-suggestions.md)). Mongo local: `docker compose up -d`, luego aplica el esquema:
+Copia `.env.example` a `.env` y ajusta `DATABASE_URL` (MongoDB; ver guía). Para sugerencias de IA, añade `AI_API_KEY` de DeepSeek (ver [docs/ai-suggestions.md](docs/ai-suggestions.md)). Mongo local:
 
 ```bash
-yarn prisma:push
+docker compose up -d
 ```
 
 ## Scripts
@@ -61,8 +61,8 @@ yarn prisma:push
 | `yarn build` | Compilación (`nest build`) |
 | `yarn start:prod` | Ejecuta `node dist/main` (tras `build`) |
 | `yarn lint` | ESLint sobre `src`, `apps`, `libs` |
-| `yarn prisma:generate` | Regenera el cliente Prisma |
-| `yarn prisma:push` | Sincroniza `schema.prisma` con Mongo (`db push`) |
+
+Persistencia: **Mongoose** (`mongoose`, `@nestjs/mongoose`); esquemas en `src/schemas/`.
 
 ## Licencia
 
