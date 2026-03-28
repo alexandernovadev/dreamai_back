@@ -31,6 +31,16 @@ En los segmentos (`dreams` JSON), las apariciones enlazan con `catalogCharacterI
 - **`relatedLifeEventIds`**: cada id debe existir en **`/life-events`**.
 - Referencias **`catalogCharacterId` / `catalogLocationId` / `catalogObjectId`** en `dreams` deben existir en el catálogo correspondiente.
 
+### IA — DeepSeek (OpenAI-compatible)
+
+Se usa el paquete oficial **`openai`** con `baseURL` de DeepSeek (no la API de OpenAI salvo que cambies la URL y la clave).
+
+- Variables: `DEEPSEEK_API_KEY`, opcional `DEEPSEEK_BASE_URL` (por defecto `https://api.deepseek.com`), `DEEPSEEK_MODEL` (por defecto `deepseek-chat`; también existe `deepseek-reasoner`).
+- **`GET /ai/deepseek/status`** — `{ "configured": true|false }` según exista la clave.
+- **`POST /ai/deepseek/chat`** — cuerpo `{ "messages": [{ "role": "user"|"assistant"|"system", "content": "..." }], "model"?: "..." }`; devuelve la respuesta del proveedor (chat completions).
+
+Inyecta **`DeepseekService`** en otros módulos para llamadas desde dominio (p. ej. sugerencias de segmentos).
+
 ## Requisitos
 
 - Node.js acorde a tu entorno (el proyecto usa TypeScript 5.x).
