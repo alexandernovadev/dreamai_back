@@ -11,7 +11,7 @@ El modelo de producto vive en `docs/`:
 - **[Guía del backend (uso, rutas, entorno, sin código)](docs/GUIA-DREAMIA-BACK.md)** — qué hay y cómo usarlo.
 - **[Sugerencias de entidades con IA](docs/ai-suggestions.md)** — `POST /ai/suggest-entities`, variables de entorno y flujo con el refinamiento.
 - **[Flujo de una sesión de sueño](docs/dream-workflow-sequence.md)** — estados (`Draft` → `Refining` → `Structured` → `ReflectionsDone`) y catálogo de personajes.
-- **Tipos TypeScript** (`docs/types/`) — sesiones, segmentos, personajes, lugares, objetos, emociones, **eventos de vida** (`LifeEvent`) y clasificación (`DreamKind`, `DreamSessionStatus`). Índice: [docs/README.md](docs/README.md).
+- **Documentación** en `docs/` — guía HTTP y flujos; el modelo persistido está en **`src/schemas/`** y enums en **`src/domain/enums.ts`**. Índice: [docs/README.md](docs/README.md).
 
 Sirven como contrato compartido con el front y como referencia al implementar endpoints y persistencia.
 
@@ -29,7 +29,7 @@ En los segmentos (`dreams` JSON), las apariciones enlazan con `catalogCharacterI
 ### Reglas alineadas a `docs/` (validación en servidor)
 
 - **DRAFT / REFINING**: `dreamKind` debe ser **`UNKNOWN`**; el análisis por segmento puede ir incompleto.
-- **STRUCTURED / REFLECTIONS_DONE**: `dreamKind` distinto de **`UNKNOWN`**; al menos un segmento; cada segmento con **`analysis`** completo (perspectiva, entidades, lucidez) según tipos en `docs/types/`.
+- **STRUCTURED / REFLECTIONS_DONE**: `dreamKind` distinto de **`UNKNOWN`**; al menos un segmento; cada segmento con **`analysis`** completo (perspectiva, entidades, lucidez) según validación en `src/dream-sessions/dream-session-validation.service.ts`.
 - **REFLECTIONS_DONE**: **`userThought`** obligatorio (no vacío).
 - **`relatedLifeEventIds`**: cada id debe existir en **`/life-events`**.
 - Referencias **`catalogCharacterId` / `catalogLocationId` / `catalogObjectId`** en `dreams` deben existir en el catálogo correspondiente.

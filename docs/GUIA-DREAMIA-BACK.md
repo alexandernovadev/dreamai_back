@@ -1,6 +1,6 @@
 # Guía del backend Dreamia
 
-Documento orientado a **qué existe**, **cómo encaja** y **cómo usarlo** (HTTP, variables de entorno, reglas de negocio). No sustituye el código fuente ni los tipos en `docs/types/`.
+Documento orientado a **qué existe**, **cómo encaja** y **cómo usarlo** (HTTP, variables de entorno, reglas de negocio). El contrato de datos vive en el código (`src/schemas/`, `src/domain/enums.ts`).
 
 ---
 
@@ -43,16 +43,16 @@ Copia `.env.example` a **`.env` en la raíz del repo** (junto a `package.json`);
 - Una **sesión de sueño** tiene estado (`Draft` → `Refining` → `Structured` → `ReflectionsDone`), tipo de noche (`dreamKind`), texto libre opcional, reflexión opcional salvo en el último estado, vínculos a eventos de vida, y un array **JSON** de **segmentos** (`dreams`).
 - Cada segmento puede llevar **análisis** (perspectiva, entidades, lucidez). En borrador y refinamiento el análisis puede ir incompleto; en estados “cerrados” el servidor exige forma completa según las reglas descritas más abajo.
 - **Catálogo:** entradas persistentes de personajes, lugares y objetos. Dentro del JSON de segmentos se enlazan con identificadores de catálogo; el backend mantiene listas de ids en la sesión para filtrar rápido.
-- **Eventos de vida:** entidad propia en `/life-events` (tipo `LifeEvent` en `docs/types/life-event.ts`). En la sesión solo se guardan **referencias por id** en `relatedLifeEventIds`: no se incrusta el título ni la fecha del evento en el documento del sueño; el cliente debe **resolver** cada id con `GET /life-events` o el detalle si hace falta mostrar datos en pantalla.
+- **Eventos de vida:** entidad propia en `/life-events` (esquema `LifeEvent` en `src/schemas/life-event.schema.ts`). En la sesión solo se guardan **referencias por id** en `relatedLifeEventIds`: no se incrusta el título ni la fecha del evento en el documento del sueño; el cliente debe **resolver** cada id con `GET /life-events` o el detalle si hace falta mostrar datos en pantalla.
 
-El flujo narrativo detallado está en `dream-workflow-sequence.md`; los tipos TypeScript del dominio están en `docs/types/`.
+El flujo narrativo detallado está en `dream-workflow-sequence.md`; enums y modelos persistidos están en `src/domain/enums.ts` y `src/schemas/`.
 
 ---
 
 ## 5. Reglas que aplica el servidor al guardar sesiones
 
 - **Draft y Refining:** la clasificación global de la noche debe ser **desconocida** (`Unknown`); el análisis por segmento puede estar incompleto.
-- **Structured y ReflectionsDone:** la clasificación global ya no puede ser “desconocida”; debe haber al menos un segmento y cada segmento debe llevar **análisis completo** (perspectiva, entidades con listas, lucidez), con enums y campos coherentes con el contrato de tipos.
+- **Structured y ReflectionsDone:** la clasificación global ya no puede ser “desconocida”; debe haber al menos un segmento y cada segmento debe llevar **análisis completo** (perspectiva, entidades con listas, lucidez), con enums y campos coherentes con la validación del servidor (`dream-session-validation.service.ts`).
 - **ReflectionsDone:** la reflexión del usuario es obligatoria y no puede ser solo espacios.
 - **Referencias:** todo id en `relatedLifeEventIds` debe existir como evento de vida; todo `catalogCharacterId`, `catalogLocationId` y `catalogObjectId` usado dentro de `dreams` debe existir en el catálogo correspondiente.
 
@@ -149,8 +149,8 @@ Misma forma con prefijo `/catalog/objects` y la subruta `.../{id}/dream-sessions
 
 | Ubicación | Contenido |
 |-----------|-----------|
-| `docs/README.md` | Índice de esta carpeta y tabla de `docs/types/`. |
-| `docs/types/` | Tipos TypeScript del dominio (sesión, segmentos, personajes, lugares, objetos, emociones, **eventos de vida**). |
+| `docs/README.md` | Índice de esta carpeta. |
+| `src/schemas/`, `src/domain/enums.ts` | Esquemas Mongoose y enums (contrato de persistencia en el servidor). |
 | `docs/dream-workflow-sequence.md` | Flujo por estados y diagrama de secuencia. |
 | `docs/ai-suggestions.md` | Endpoint `POST /ai/suggest-entities`, variables de entorno y ejemplo de uso. |
 | `README.md` (raíz) | Resumen del proyecto, scripts y enlace a licencia. |

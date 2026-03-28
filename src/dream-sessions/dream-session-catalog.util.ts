@@ -1,6 +1,6 @@
 /**
  * Recorre `DreamSegment[]` en JSON y acumula ids de catálogo referenciados en entidades.
- * Alineado a docs/types: catalogCharacterId, catalogObjectId, catalogLocationId (opcional en Location).
+ * Segmentos JSON: catalogCharacterId, catalogObjectId, catalogLocationId (opcional en Location).
  */
 export function extractCatalogIdsFromDreamsJson(dreams: unknown): {
   catalogCharacterIds: string[];

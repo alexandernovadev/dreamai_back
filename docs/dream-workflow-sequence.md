@@ -50,11 +50,11 @@ En GitHub, GitLab o editores con preview Mermaid el diagrama se renderiza solo. 
 
 ## Eventos de vida (`relatedLifeEventIds`)
 
-Opcional en cualquier estado: array de **ids** de la colección `/life-events` (modelo `LifeEvent` en `docs/types/life-event.ts`). El sueño **no** guarda el título ni la fecha del evento; la UI debe cargar el evento por id si hace falta mostrarlo. Válido enlazar el mismo evento en varias sesiones.
+Opcional en cualquier estado: array de **ids** de la colección `/life-events` (esquema `LifeEvent` en `src/schemas/life-event.schema.ts`). El sueño **no** guarda el título ni la fecha del evento; la UI debe cargar el evento por id si hace falta mostrarlo. Válido enlazar el mismo evento en varias sesiones.
 
 ## Validación sugerida (API / backend)
 
-- **`dreamKind`**: en `Draft` y `Refining` debe ser `Unknown`; al pasar a `Structured` el usuario confirma o cambia la clasificación (ver `DreamSession` en `docs/types/dream.ts`).
+- **`dreamKind`**: en `Draft` y `Refining` debe ser `Unknown`; al pasar a `Structured` el usuario confirma o cambia la clasificación (ver `DreamSession` en `src/schemas/dream-session.schema.ts` y `DreamKind` en `src/domain/enums.ts`).
 - **Reflexión**: no exigir `ReflectionsDone` para dar por cerrada la sesión si el producto permite terminar en `Structured` sin `userThought`.
 - **Catálogo**: `Character.catalogCharacterId` enlaza la aparición onírica con el personaje recurrente en catálogo (análogo a `DreamObject.catalogObjectId`).
 - **`relatedLifeEventIds`**: cada id debe existir en `/life-events` (el servidor valida al guardar).

@@ -74,9 +74,9 @@ JSON con tres listas (pueden estar vacías):
 }
 ```
 
-### Significado de campos (alineado a `docs/types/`)
+### Significado de campos (alineado al dominio de la API)
 
-No incluye **eventos de vida**: esos se gestionan aparte (`/life-events` y `relatedLifeEventIds` en la sesión; ver `docs/types/life-event.ts`).
+No incluye **eventos de vida**: esos se gestionan aparte (`/life-events` y `relatedLifeEventIds` en la sesión; ver esquema `LifeEvent` en `src/schemas/life-event.schema.ts`).
 
 - **`characters`**
   - `archetype`: uno de `SHADOW`, `ANIMA_ANIMUS`, `WISE_FIGURE`, `PERSONA`, `UNKNOWN` (mismo criterio que `Archetype` en `character.ts`).
@@ -96,7 +96,7 @@ Valores desconocidos o mal formados del modelo se **normalizan** en servidor (p.
 1. Usuario escribe el sueño en **Draft** (`rawNarrative` o segmentos con `rawText`).
 2. Al pasar a **Refining**, el cliente puede llamar a `POST /ai/suggest-entities` con ese texto.
 3. Mostrar sugerencias; el usuario acepta, corrige o ignora.
-4. Para persistir, generá ids locales (`crypto.randomUUID()` o el esquema que use el cliente) y construí `DreamSegment.analysis.entities` según `docs/types/dream.ts`.
+4. Para persistir, generá ids locales (`crypto.randomUUID()` o el esquema que use el cliente) y construí `analysis.entities` según lo que valida el servidor (`dream-session-validation.service.ts`).
 5. Si un personaje coincide con el **catálogo**, enlazá `catalogCharacterId` (y análogo para lugares/objetos) antes de `PATCH /dream-sessions/:id`.
 6. Los **eventos de vida** (`relatedLifeEventIds`) son independientes: creá o elegí filas en `/life-events` y guardá solo los ids en la sesión.
 
