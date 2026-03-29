@@ -12,10 +12,24 @@ export const CharacterInDreamEntitySchema = SchemaFactory.createForClass(
   CharacterInDreamEntity,
 );
 
+/** Location appearance inside a dream (used for joins / indexes only). */
+@Schema({ _id: false })
+export class LocationInDreamEntity {
+  @Prop({ type: Types.ObjectId, ref: 'Location', required: true })
+  locationId: Types.ObjectId;
+}
+
+export const LocationInDreamEntitySchema = SchemaFactory.createForClass(
+  LocationInDreamEntity,
+);
+
 @Schema({ _id: false })
 export class DreamEntities {
   @Prop({ type: [CharacterInDreamEntitySchema], default: [] })
   characters: CharacterInDreamEntity[];
+
+  @Prop({ type: [LocationInDreamEntitySchema], default: [] })
+  locations: LocationInDreamEntity[];
 }
 
 export const DreamEntitiesSchema = SchemaFactory.createForClass(DreamEntities);
@@ -49,6 +63,7 @@ export interface DreamSessionDocument {
   analysis?: {
     entities?: {
       characters?: Array<{ characterId: Types.ObjectId }>;
+      locations?: Array<{ locationId: Types.ObjectId }>;
     };
   };
   createdAt: Date;
@@ -57,4 +72,8 @@ export interface DreamSessionDocument {
 
 DreamSessionSchema.index({
   'analysis.entities.characters.characterId': 1,
+});
+
+DreamSessionSchema.index({
+  'analysis.entities.locations.locationId': 1,
 });
