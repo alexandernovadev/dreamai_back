@@ -23,6 +23,26 @@ export const LocationInDreamEntitySchema = SchemaFactory.createForClass(
   LocationInDreamEntity,
 );
 
+/** Dream object (prop) appearance inside a dream (joins / indexes only). */
+@Schema({ _id: false })
+export class ObjectInDreamEntity {
+  @Prop({ type: Types.ObjectId, ref: 'DreamObject', required: true })
+  objectId: Types.ObjectId;
+}
+
+export const ObjectInDreamEntitySchema =
+  SchemaFactory.createForClass(ObjectInDreamEntity);
+
+/** Narrative event row inside a dream (joins / indexes only). */
+@Schema({ _id: false })
+export class EventInDreamEntity {
+  @Prop({ type: Types.ObjectId, ref: 'DreamEvent', required: true })
+  eventId: Types.ObjectId;
+}
+
+export const EventInDreamEntitySchema =
+  SchemaFactory.createForClass(EventInDreamEntity);
+
 @Schema({ _id: false })
 export class DreamEntities {
   @Prop({ type: [CharacterInDreamEntitySchema], default: [] })
@@ -30,6 +50,12 @@ export class DreamEntities {
 
   @Prop({ type: [LocationInDreamEntitySchema], default: [] })
   locations: LocationInDreamEntity[];
+
+  @Prop({ type: [ObjectInDreamEntitySchema], default: [] })
+  objects: ObjectInDreamEntity[];
+
+  @Prop({ type: [EventInDreamEntitySchema], default: [] })
+  events: EventInDreamEntity[];
 }
 
 export const DreamEntitiesSchema = SchemaFactory.createForClass(DreamEntities);
@@ -64,6 +90,8 @@ export interface DreamSessionDocument {
     entities?: {
       characters?: Array<{ characterId: Types.ObjectId }>;
       locations?: Array<{ locationId: Types.ObjectId }>;
+      objects?: Array<{ objectId: Types.ObjectId }>;
+      events?: Array<{ eventId: Types.ObjectId }>;
     };
   };
   createdAt: Date;
@@ -76,4 +104,12 @@ DreamSessionSchema.index({
 
 DreamSessionSchema.index({
   'analysis.entities.locations.locationId': 1,
+});
+
+DreamSessionSchema.index({
+  'analysis.entities.objects.objectId': 1,
+});
+
+DreamSessionSchema.index({
+  'analysis.entities.events.eventId': 1,
 });
