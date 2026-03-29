@@ -18,6 +18,7 @@ Sirven como contrato compartido con el front y como referencia al implementar en
 ## API (MVP)
 
 - **`GET /`** — saludo comprobación.
+- **`GET /health`** — salud para balanceadores y contenedores (`{ "status": "ok" }`).
 - **`POST /ai/suggest-entities`** — sugerencias de personajes, lugares y objetos a partir de texto libre (opcional; por defecto **DeepSeek**; requiere `AI_API_KEY`; ver [docs/ai-suggestions.md](docs/ai-suggestions.md)).
 - **`/dream-sessions`** — CRUD de sesiones; `GET` admite query `catalogCharacterId`, `catalogLocationId`, `catalogObjectId`, `lifeEventId` (AND de filtros).
 - **`/catalog/characters`**, **`/catalog/locations`**, **`/catalog/objects`** — CRUD de entradas de catálogo (Mongo `ObjectId` como `id`).
@@ -63,6 +64,17 @@ docker compose up -d
 | `yarn lint` | ESLint sobre `src`, `apps`, `libs` |
 
 Persistencia: **Mongoose** (`mongoose`, `@nestjs/mongoose`); esquemas en `src/schemas/`.
+
+## Imagen Docker (producción)
+
+En la raíz del repo hay un **`Dockerfile`** multi-stage (build con dependencias de desarrollo, imagen final solo con `node_modules` de producción y `dist`). Ejemplo:
+
+```bash
+docker build -t dreamia-back .
+docker run --rm -p 3000:3000 -e DATABASE_URL="mongodb://host.docker.internal:27017/dreamia" dreamia-back
+```
+
+Definí **`DATABASE_URL`** (y el resto de variables de [docs/GUIA-DREAMIA-BACK.md](docs/GUIA-DREAMIA-BACK.md)) en el entorno del contenedor o en un secret. El healthcheck usa **`GET /health`** y el puerto de **`PORT`** (por defecto 3000).
 
 ## Licencia
 
