@@ -4,6 +4,7 @@ import { AiModule } from './ai/ai.module';
 import { CharacterModule } from './character/character.module';
 import { ContextLifeModule } from './context-life/context-life.module';
 import { DreamEventModule } from './dream-event/dream-event.module';
+import { DreamSessionModule } from './dream-session/dream-session.module';
 import { DreamObjectModule } from './dream-object/dream-object.module';
 import { FeelingModule } from './feeling/feeling.module';
 import { LocationModule } from './location/location.module';
@@ -22,6 +23,7 @@ import { AppService } from './app.service';
     LocationModule,
     DreamObjectModule,
     DreamEventModule,
+    DreamSessionModule,
     ContextLifeModule,
     FeelingModule,
   ],

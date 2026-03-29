@@ -1,6 +1,14 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Types } from 'mongoose';
 
+/** Product flow: Draft → Elements → Structured → Thought (user-facing steps). */
+export enum DreamSessionStatus {
+  DRAFT = 'DRAFT',
+  ELEMENTS = 'ELEMENTS',
+  STRUCTURED = 'STRUCTURED',
+  THOUGHT = 'THOUGHT',
+}
+
 /** Character appearance inside a dream (used for joins / indexes only). */
 @Schema({ _id: false })
 export class CharacterInDreamEntity {
@@ -89,6 +97,18 @@ export const DreamEntitiesSchema = SchemaFactory.createForClass(DreamEntities);
 
 @Schema({ _id: false })
 export class DreamAnalysis {
+  @Prop({ type: [String], default: [] })
+  perspectives?: string[];
+
+  @Prop({ type: Number, min: 0, max: 10 })
+  lucidityLevel?: number;
+
+  /**
+   * Linked catalog ids (and optional quotes on subdocs when added).
+   * TODO (Elements step): business rules for “new vs existing” catalog rows, dedup, and
+   * validating ObjectIds against `characters`, `locations`, etc. This layer only stores
+   * whatever the API sends; no orchestration here yet.
+   */
   @Prop({ type: DreamEntitiesSchema })
   entities?: DreamEntities;
 }
@@ -99,6 +119,32 @@ export const DreamAnalysisSchema = SchemaFactory.createForClass(DreamAnalysis);
 export class DreamSession {
   @Prop({ type: Date })
   timestamp?: Date;
+
+  @Prop({
+    type: String,
+    enum: Object.values(DreamSessionStatus),
+    default: DreamSessionStatus.DRAFT,
+  })
+  status: DreamSessionStatus;
+
+  @Prop({ type: String, trim: true, default: '' })
+  rawNarrative: string;
+
+  @Prop({ type: [String], default: [] })
+  dreamKind: string[];
+
+  @Prop({ type: [String], default: [] })
+  dreamImages: string[];
+
+  @Prop({ type: String, trim: true, default: undefined })
+  userThought?: string;
+
+  /**
+   * AI-generated summary / commentary on the dream.
+   * TODO (IA): populate via a separate pipeline or endpoint — not from this basic CRUD service.
+   */
+  @Prop({ type: String, trim: true, default: undefined })
+  aiSummarize?: string;
 
   @Prop({ type: DreamAnalysisSchema })
   analysis?: DreamAnalysis;
@@ -113,7 +159,15 @@ export const DreamSessionSchema = SchemaFactory.createForClass(DreamSession);
 export interface DreamSessionDocument {
   _id: Types.ObjectId;
   timestamp?: Date;
+  status: DreamSessionStatus;
+  rawNarrative: string;
+  dreamKind: string[];
+  dreamImages: string[];
+  userThought?: string;
+  aiSummarize?: string;
   analysis?: {
+    perspectives?: string[];
+    lucidityLevel?: number;
     entities?: {
       characters?: Array<{ characterId: Types.ObjectId }>;
       locations?: Array<{ locationId: Types.ObjectId }>;
@@ -150,3 +204,6 @@ DreamSessionSchema.index({
 DreamSessionSchema.index({
   'analysis.entities.feelings.feelingId': 1,
 });
+
+DreamSessionSchema.index({ status: 1 });
+DreamSessionSchema.index({ timestamp: -1 });
