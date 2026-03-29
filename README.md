@@ -37,7 +37,7 @@ En los segmentos (`dreams` JSON), las apariciones enlazan con `catalogCharacterI
 
 ## Requisitos
 
-- Node.js **18 o superior** en desarrollo (LTS 20/22 recomendado). La **imagen Docker** usa **Node 19.9** (`Dockerfile`).
+- Node.js **20 o superior** (LTS recomendado). La **imagen Docker** usa **`node:20-alpine`** (`Dockerfile`).
 - [Yarn](https://yarnpkg.com/) (el lockfile del repo es Yarn).
 
 ## Instalación
@@ -67,7 +67,7 @@ Persistencia: **Mongoose** (`mongoose`, `@nestjs/mongoose`); esquemas en `src/sc
 
 ## Imagen Docker (producción)
 
-En la raíz del repo hay un **`Dockerfile`** multi-stage basado en **`node:19.9.0-alpine`** (builder y runtime). Ejemplo:
+En la raíz del repo hay un **`Dockerfile`** multi-stage basado en **`node:20-alpine`** (builder y runtime). Ejemplo:
 
 ```bash
 docker build -t dreamia-back .

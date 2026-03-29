@@ -1,11 +1,12 @@
 # Dreamia backend — multi-stage (NestJS + Mongoose)
 # Requiere en runtime: DATABASE_URL (y opcionalmente PORT, AI_*, etc.)
-# Node 19.9: alineado a otros servicios / Fly; localmente podés usar 18/20 LTS.
+# Node 20 LTS: dependencias transitivas (p. ej. file-type@21) exigen engines ">=20";
+# Node 19 no es compatible con `yarn install` en este lockfile (Fly / Docker).
 
 # ==========================================
 # Stage 1: Build
 # ==========================================
-FROM node:19.9.0-alpine AS builder
+FROM node:20-alpine AS builder
 
 RUN apk add --no-cache python3 make g++
 
@@ -22,7 +23,7 @@ RUN yarn install --production --frozen-lockfile && yarn cache clean
 # ==========================================
 # Stage 2: Production
 # ==========================================
-FROM node:19.9.0-alpine AS production
+FROM node:20-alpine AS production
 
 RUN apk add --no-cache dumb-init
 
