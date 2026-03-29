@@ -52,7 +52,7 @@ El flujo narrativo detallado está en `dream-workflow-sequence.md`; enums y mode
 ## 5. Reglas que aplica el servidor al guardar sesiones
 
 - **Draft y Refining:** la clasificación global de la noche debe ser **desconocida** (`Unknown`); el análisis por segmento puede estar incompleto.
-- **Structured y ReflectionsDone:** la clasificación global ya no puede ser “desconocida”; debe haber al menos un segmento y cada segmento debe llevar **análisis completo** (perspectiva, entidades con listas, lucidez), con enums y campos coherentes con la validación del servidor (`dream-session-validation.service.ts`).
+- **Structured y ReflectionsDone:** la clasificación global ya no puede ser “desconocida”; debe haber al menos un segmento y cada segmento debe llevar **análisis completo** (perspectiva, entidades con listas, **lucidez**), con enums y campos coherentes con la validación del servidor (`dream-session-validation.service.ts`). En `analysis`, **`lucidityLevel`** es un entero **0–5** (0 = sin lucidez; 1–5 = grado de lucidez). El campo booleano `isLucid` ya no se usa en validación.
 - **ReflectionsDone:** la reflexión del usuario es obligatoria y no puede ser solo espacios.
 - **Referencias:** todo id en `relatedLifeEventIds` debe existir como evento de vida; todo `catalogCharacterId`, `catalogLocationId` y `catalogObjectId` usado dentro de `dreams` debe existir en el catálogo correspondiente.
 

@@ -30,7 +30,7 @@ En los segmentos (`dreams` JSON), las apariciones enlazan con `catalogCharacterI
 ### Reglas alineadas a `docs/` (validación en servidor)
 
 - **DRAFT / REFINING**: `dreamKind` debe ser **`UNKNOWN`**; el análisis por segmento puede ir incompleto.
-- **STRUCTURED / REFLECTIONS_DONE**: `dreamKind` distinto de **`UNKNOWN`**; al menos un segmento; cada segmento con **`analysis`** completo (perspectiva, entidades, lucidez) según validación en `src/dream-sessions/dream-session-validation.service.ts`.
+- **STRUCTURED / REFLECTIONS_DONE**: `dreamKind` distinto de **`UNKNOWN`**; al menos un segmento; cada segmento con **`analysis`** completo (perspectiva, entidades, **`lucidityLevel` 0–5**) según validación en `src/dream-sessions/dream-session-validation.service.ts`.
 - **REFLECTIONS_DONE**: **`userThought`** obligatorio (no vacío).
 - **`relatedLifeEventIds`**: cada id debe existir en **`/life-events`**.
 - Referencias **`catalogCharacterId` / `catalogLocationId` / `catalogObjectId`** en `dreams` deben existir en el catálogo correspondiente.

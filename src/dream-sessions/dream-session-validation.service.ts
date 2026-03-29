@@ -19,6 +19,19 @@ import { extractCatalogIdsFromDreamsJson } from './dream-session-catalog.util';
 
 const PERSPECTIVE = new Set(['ACTOR', 'OBSERVER']);
 
+/** Grado de lucidez por segmento: 0 = no lúcido, 1–5 = escala creciente. */
+const LUCIDITY_MIN = 0;
+const LUCIDITY_MAX = 5;
+
+function isValidLucidityLevel(value: unknown): value is number {
+  return (
+    typeof value === 'number' &&
+    Number.isInteger(value) &&
+    value >= LUCIDITY_MIN &&
+    value <= LUCIDITY_MAX
+  );
+}
+
 const FEELING_KINDS = new Set([
   'FEAR',
   'ANXIETY',
@@ -175,9 +188,9 @@ export class DreamSessionValidationService {
         `${path}.perspective debe ser ACTOR u OBSERVER.`,
       );
     }
-    if (typeof a.isLucid !== 'boolean') {
+    if (!isValidLucidityLevel(a.lucidityLevel)) {
       throw new UnprocessableEntityException(
-        `${path}.isLucid debe ser boolean.`,
+        `${path}.lucidityLevel debe ser un entero entre ${LUCIDITY_MIN} y ${LUCIDITY_MAX} (0 = sin lucidez).`,
       );
     }
     if (

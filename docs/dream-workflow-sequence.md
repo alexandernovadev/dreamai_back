@@ -23,7 +23,7 @@ sequenceDiagram
         Cat-->>App: catalogCharacterId
         App->>App: Enlaza aparición en Character
     end
-    U->>App: Completa analysis por segmento (perspectiva, personajes, lugares, objetos, lucidez)
+    U->>App: Completa analysis por segmento (perspectiva, personajes, lugares, objetos, lucidityLevel 0-5)
 
     Note over U,Cat: Paso 3 — Cierre estructural (Structured)
     U->>App: Confirma que el modelo onírico está listo
