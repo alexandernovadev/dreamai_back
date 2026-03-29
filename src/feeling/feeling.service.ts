@@ -131,13 +131,8 @@ export class FeelingService {
   private buildFilter(query: QueryFeelingsDto): Record<string, unknown> {
     const filter: Record<string, unknown> = {};
 
-    if (query.kindExact !== undefined && query.kindExact.trim() !== '') {
-      filter.kind = query.kindExact.trim();
-    } else if (query.kind !== undefined && query.kind.trim() !== '') {
-      filter.kind = {
-        $regex: escapeRegex(query.kind.trim()),
-        $options: 'i',
-      };
+    if (query.kind !== undefined) {
+      filter.kind = query.kind;
     }
 
     if (query.notes !== undefined && query.notes.trim() !== '') {

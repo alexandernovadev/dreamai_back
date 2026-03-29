@@ -11,6 +11,7 @@ import {
   Query,
 } from '@nestjs/common';
 import { ParseObjectIdPipe } from '@nestjs/mongoose';
+import { listFeelingKinds } from './feeling-kind';
 import { FeelingService } from './feeling.service';
 import { CreateFeelingDto } from './dto/create-feeling.dto';
 import { QueryFeelingsDto } from './dto/query-feelings.dto';
@@ -23,6 +24,12 @@ export class FeelingController {
   @Post()
   create(@Body() dto: CreateFeelingDto) {
     return this.feelingService.create(dto);
+  }
+
+  /** Catalog of allowed `kind` values + Spanish labels (register before `:id`). */
+  @Get('kinds')
+  listKinds() {
+    return { data: listFeelingKinds() };
   }
 
   @Get()

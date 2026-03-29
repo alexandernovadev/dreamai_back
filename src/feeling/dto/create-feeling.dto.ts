@@ -1,5 +1,6 @@
 import { Type } from 'class-transformer';
 import {
+  IsEnum,
   IsMongoId,
   IsNumber,
   IsOptional,
@@ -7,14 +8,12 @@ import {
   Max,
   MaxLength,
   Min,
-  MinLength,
 } from 'class-validator';
+import { FeelingKind } from '../feeling-kind';
 
 export class CreateFeelingDto {
-  @IsString()
-  @MinLength(1)
-  @MaxLength(200)
-  kind: string;
+  @IsEnum(FeelingKind)
+  kind: FeelingKind;
 
   @IsOptional()
   @Type(() => Number)

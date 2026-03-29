@@ -1,6 +1,7 @@
 import { Type } from 'class-transformer';
 import {
   IsDateString,
+  IsEnum,
   IsInt,
   IsMongoId,
   IsNumber,
@@ -10,6 +11,7 @@ import {
   MaxLength,
   Min,
 } from 'class-validator';
+import { FeelingKind } from '../feeling-kind';
 
 export class QueryFeelingsDto {
   @IsOptional()
@@ -25,15 +27,10 @@ export class QueryFeelingsDto {
   @Max(100)
   limit?: number;
 
+  /** Exact match on `Feeling.kind`. */
   @IsOptional()
-  @IsString()
-  @MaxLength(200)
-  kind?: string;
-
-  @IsOptional()
-  @IsString()
-  @MaxLength(200)
-  kindExact?: string;
+  @IsEnum(FeelingKind)
+  kind?: FeelingKind;
 
   @IsOptional()
   @IsString()

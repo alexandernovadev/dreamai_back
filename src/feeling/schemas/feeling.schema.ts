@@ -1,11 +1,16 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Types } from 'mongoose';
 import { DreamSession } from '../../dream-session/schemas/dream-session.schema';
+import { FeelingKind } from '../feeling-kind';
 
 @Schema({ timestamps: true, collection: 'feelings' })
 export class Feeling {
-  @Prop({ required: true, trim: true })
-  kind: string;
+  @Prop({
+    type: String,
+    enum: Object.values(FeelingKind),
+    required: true,
+  })
+  kind: FeelingKind;
 
   @Prop({ type: Number, min: 0, max: 10 })
   intensity?: number;
@@ -21,7 +26,7 @@ export const FeelingSchema = SchemaFactory.createForClass(Feeling);
 
 export interface FeelingDocument {
   _id: Types.ObjectId;
-  kind: string;
+  kind: FeelingKind;
   intensity?: number;
   notes?: string;
   dreamSessionId: Types.ObjectId;
