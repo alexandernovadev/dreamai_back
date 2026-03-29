@@ -1,6 +1,6 @@
 {
   "name": "dreamia_back",
-  "version": "0.0.1",
+  "version": "1.3.3",
   "description": "",
   "author": "novalabs",
   "private": true,
@@ -9,7 +9,7 @@
     "node": ">=20.0.0"
   },
   "scripts": {
-    "build": "nest build",
+    "build": "node scripts/generate-build-info.mjs && nest build",
     "format": "prettier --write \"src/**/*.ts\"",
     "start": "nest start",
     "start:dev": "nest start --watch",

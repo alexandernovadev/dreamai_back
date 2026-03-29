@@ -68,7 +68,7 @@ Rutas relativas a la raíz del servicio (sin incluir dominio ni puerto).
 
 | Método | Ruta | Descripción breve |
 |--------|------|-------------------|
-| GET | `/` | Comprobación viva; respuesta de texto fija. |
+| GET | `/` | Metadatos de la app en JSON (`version`, `date` del build, `environment`). |
 | GET | `/health` | Estado del proceso (`{ "status": "ok" }`); usado por Docker/Kubernetes. |
 
 ### IA (sugerencias, sin persistir)

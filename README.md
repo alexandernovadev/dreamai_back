@@ -17,7 +17,7 @@ Sirven como contrato compartido con el front y como referencia al implementar en
 
 ## API (MVP)
 
-- **`GET /`** — saludo comprobación.
+- **`GET /`** — metadatos JSON (`version` desde `package.json`, `date` fijada en el último `yarn build`, `environment` vía `APP_ENV` o `NODE_ENV`).
 - **`GET /health`** — salud para balanceadores y contenedores (`{ "status": "ok" }`).
 - **`POST /ai/suggest-entities`** — sugerencias de personajes, lugares y objetos a partir de texto libre (opcional; por defecto **DeepSeek**; requiere `AI_API_KEY`; ver [docs/ai-suggestions.md](docs/ai-suggestions.md)).
 - **`/dream-sessions`** — CRUD de sesiones; `GET` admite query `catalogCharacterId`, `catalogLocationId`, `catalogObjectId`, `lifeEventId` (AND de filtros).
