@@ -21,6 +21,8 @@ Es la **API HTTP** de Dreamia: guardar y consultar **sesiones de sueño**, **cat
 | `DATABASE_URL` | URI de MongoDB (el nombre de base suele ir en el path, p. ej. `.../dreamia`). |
 | `MONGODB_DATABASE` | Opcional: nombre de base si la URI no lo lleva en el path. |
 | `PORT` | Puerto donde escucha la app (opcional). |
+| `CORS_ORIGINS` | Opcional: orígenes permitidos separados por comas. Si no se define, por defecto `http://localhost:8081`, `http://localhost:3000`, `http://localhost:8080`. |
+| `CORS_CREDENTIALS` | Opcional: `true` si el cliente envía cookies o credenciales en peticiones cross-origin (por defecto desactivado). |
 | `AI_API_KEY` | Clave de **DeepSeek** para `POST /ai/suggest-entities` (opcional; sin clave ese endpoint responde 503). También se acepta `OPENAI_API_KEY` como alias. |
 | `AI_MODEL` | Modelo de chat (opcional; por defecto `deepseek-chat`). |
 | `AI_BASE_URL` | URL base compatible con OpenAI (opcional; por defecto `https://api.deepseek.com/v1`). |
