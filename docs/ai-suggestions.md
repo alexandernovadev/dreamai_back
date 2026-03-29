@@ -1,6 +1,6 @@
 # Sugerencias de entidades con IA (`POST /ai/suggest-entities`)
 
-Este endpoint ayuda en el **refinamiento** del sueño: a partir de texto libre (por ejemplo `rawNarrative` o el `rawText` de un segmento), un modelo de lenguaje **sugiere** posibles personajes, lugares y objetos oníricos. **No guarda nada en base de datos**; el cliente debe revisar, editar y luego persistir con las rutas habituales (`/dream-sessions`, catálogo, etc.).
+Este endpoint, a partir de texto libre del sueño, **sugiere** posibles personajes, lugares y objetos oníricos. **No guarda nada**; el cliente revisa y luego persistirá según el modelo de dominio que definan (aún no expuesto en esta capa mínima de API).
 
 ---
 
@@ -93,12 +93,9 @@ Valores desconocidos o mal formados del modelo se **normalizan** en servidor (p.
 
 ## Cómo encajarlo en el flujo de la app
 
-1. Usuario escribe el sueño en **Draft** (`rawNarrative` o segmentos con `rawText`).
-2. Al pasar a **Refining**, el cliente puede llamar a `POST /ai/suggest-entities` con ese texto.
-3. Mostrar sugerencias; el usuario acepta, corrige o ignora.
-4. Para persistir, generá ids locales (`crypto.randomUUID()` o el esquema que use el cliente) y construí `analysis.entities` según lo que valida el servidor (`dream-session-validation.service.ts`).
-5. Si un personaje coincide con el **catálogo**, enlazá `catalogCharacterId` (y análogo para lugares/objetos) antes de `PATCH /dream-sessions/:id`.
-6. Los **eventos de vida** (`relatedLifeEventIds`) son independientes: creá o elegí filas en `/life-events` y guardá solo los ids en la sesión.
+1. El cliente envía la narrativa en `POST /ai/suggest-entities` (`text`).
+2. Muestra sugerencias; el usuario acepta, corrige o ignora.
+3. La persistencia (sesiones, entidades enlazadas, etc.) será responsabilidad del modelo de datos que se implemente después; este endpoint solo devuelve JSON sugerido.
 
 El prompt del servidor pide **no** hacer interpretación terapéutica; solo etiquetado de entidades.
 

@@ -1,17 +1,46 @@
-import { Body, Controller, Post } from '@nestjs/common';
-import { CloudinaryService } from './cloudinary.service';
-import { UploadSignatureDto } from './dto/upload-signature.dto';
+import {
+  BadRequestException,
+  Controller,
+  Post,
+  Query,
+  UploadedFile,
+  UseInterceptors,
+} from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { CloudinaryService, parseUploadContext } from './cloudinary.service';
+import { UPLOAD_CONTEXT } from './cloudinary-folders';
+
+const MAX_IMAGE_BYTES = 10 * 1024 * 1024;
 
 @Controller('cloudinary')
 export class CloudinaryController {
   constructor(private readonly cloudinary: CloudinaryService) {}
 
   /**
-   * Devuelve `timestamp`, `signature`, `apiKey`, `cloudName` y `folder` para subir con POST
-   * a `https://api.cloudinary.com/v1_1/:cloud_name/image/upload` desde el cliente.
+   * Subida de imagen **en el servidor** (multipart `file`).
+   * Query opcional: `context` = `dreams` (default) | `characters` | `locations` | `objects`.
+   * Respuesta: `{ publicId, secureUrl }`.
    */
-  @Post('upload-signature')
-  uploadSignature(@Body() body: UploadSignatureDto) {
-    return this.cloudinary.getUploadSignature(body ?? {});
+  @Post('upload')
+  @UseInterceptors(
+    FileInterceptor('file', {
+      limits: { fileSize: MAX_IMAGE_BYTES },
+    }),
+  )
+  async upload(
+    @UploadedFile() file: Express.Multer.File | undefined,
+    @Query('context') contextQuery?: string,
+  ) {
+    if (!file?.buffer?.length) {
+      throw new BadRequestException(
+        'Enviar un archivo en el campo multipart `file`.',
+      );
+    }
+    const context = parseUploadContext(contextQuery) ?? UPLOAD_CONTEXT.DREAMS;
+    return this.cloudinary.uploadImageBuffer(
+      file.buffer,
+      file.mimetype,
+      context,
+    );
   }
 }

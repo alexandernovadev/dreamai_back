@@ -1,5 +1,5 @@
-# Dreamia backend — multi-stage (NestJS + Mongoose)
-# Requiere en runtime: DATABASE_URL (y opcionalmente PORT, AI_*, etc.)
+# Dreamia backend — multi-stage (NestJS)
+# Requiere en runtime: PORT, AI_* y CLOUDINARY_* según endpoints que uses.
 # Node 20 LTS: dependencias transitivas (p. ej. file-type@21) exigen engines ">=20";
 # Node 19 no es compatible con `yarn install` en este lockfile (Fly / Docker).
 
