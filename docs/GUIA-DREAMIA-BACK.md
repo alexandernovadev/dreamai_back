@@ -23,6 +23,10 @@ Es la **API HTTP** de Dreamia: guardar y consultar **sesiones de sueño**, **cat
 | `PORT` | Puerto donde escucha la app (opcional). |
 | `CORS_ORIGINS` | Opcional: orígenes permitidos separados por comas. Si no se define, por defecto `http://localhost:8081`, `http://localhost:3000`, `http://localhost:8080`. |
 | `CORS_CREDENTIALS` | Opcional: `true` si el cliente envía cookies o credenciales en peticiones cross-origin (por defecto desactivado). |
+| `CLOUDINARY_CLOUD_NAME` | Nube Cloudinary (dashboard). Si está definido, `dreamImages[].secureUrl` debe ser `https://res.cloudinary.com/...` e incluir ese nombre en la ruta. |
+| `CLOUDINARY_API_KEY` / `CLOUDINARY_API_SECRET` | Credenciales API (dashboard). Obligatorias para `POST /cloudinary/upload-signature`. |
+| `CLOUDINARY_ROOT_PREFIX` | Opcional: prefijo de carpetas (por defecto `dreamia`). Sueños: `{prefijo}/dreams`; catálogo: `{prefijo}/catalog/characters`, `.../locations`, `.../objects`. |
+| `CLOUDINARY_UPLOAD_PRESET` | Opcional: nombre del upload preset; si existe, se incluye en la firma. |
 | `AI_API_KEY` | Clave de **DeepSeek** para `POST /ai/suggest-entities` (opcional; sin clave ese endpoint responde 503). También se acepta `OPENAI_API_KEY` como alias. |
 | `AI_MODEL` | Modelo de chat (opcional; por defecto `deepseek-chat`). |
 | `AI_BASE_URL` | URL base compatible con OpenAI (opcional; por defecto `https://api.deepseek.com/v1`). |
@@ -55,6 +59,7 @@ El flujo narrativo detallado está en `dream-workflow-sequence.md`; enums y mode
 
 - **Draft y Refining:** la clasificación global de la noche debe ser **desconocida** (`Unknown`); el análisis por segmento puede estar incompleto.
 - **Structured y ReflectionsDone:** la clasificación global ya no puede ser “desconocida”; debe haber al menos un segmento y cada segmento debe llevar **análisis completo** (perspectiva, entidades con listas, **lucidez**), con enums y campos coherentes con la validación del servidor (`dream-session-validation.service.ts`). En `analysis`, **`lucidityLevel`** es un entero **0–5** (0 = sin lucidez; 1–5 = grado de lucidez). El campo booleano `isLucid` ya no se usa en validación.
+- **Imágenes del sueño:** en el documento de sesión, **`dreamImages`** es un array opcional de `{ publicId, secureUrl }` (referencias Cloudinary tras subir). Máximo 30 entradas; `secureUrl` debe ser HTTPS de `res.cloudinary.com`. Si definís `CLOUDINARY_CLOUD_NAME`, la URL debe corresponder a esa nube.
 - **ReflectionsDone:** la reflexión del usuario es obligatoria y no puede ser solo espacios.
 - **Referencias:** todo id en `relatedLifeEventIds` debe existir como evento de vida; todo `catalogCharacterId`, `catalogLocationId` y `catalogObjectId` usado dentro de `dreams` debe existir en el catálogo correspondiente.
 
@@ -81,11 +86,17 @@ Rutas relativas a la raíz del servicio (sin incluir dominio ni puerto).
 
 Ver cuerpo de petición, respuesta y flujo recomendado en **[ai-suggestions.md](ai-suggestions.md)**.
 
+### Cloudinary (firmas de subida)
+
+| Método | Ruta | Descripción breve |
+|--------|------|-------------------|
+| POST | `/cloudinary/upload-signature` | Cuerpo opcional: `context`: `dreams` (default), `characters`, `locations`, `objects` → carpeta bajo `CLOUDINARY_ROOT_PREFIX`; o `folder` para ruta manual. Respuesta incluye `folder`, `context`, `timestamp`, `signature`, `apiKey`, `cloudName`, `uploadPreset` opcional. Requiere `CLOUDINARY_*`; sin configuración responde **503**. |
+
 ### Sesiones de sueño
 
 | Método | Ruta | Descripción breve |
 |--------|------|-------------------|
-| POST | `/dream-sessions` | Crear sesión (cuerpo con timestamp, estado, tipo de sueño, segmentos JSON, etc.). |
+| POST | `/dream-sessions` | Crear sesión (cuerpo con timestamp, estado, tipo de sueño, segmentos JSON, `dreamImages` opcional, etc.). |
 | GET | `/dream-sessions` | Listar sesiones; admite filtros en query (ver tabla siguiente). |
 | GET | `/dream-sessions/{id}` | Obtener una sesión por identificador Mongo. |
 | PATCH | `/dream-sessions/{id}` | Actualizar campos parciales. |

@@ -28,6 +28,17 @@ export class DreamSession {
   @Prop({ type: MongooseSchema.Types.Mixed, default: () => [] })
   dreams: unknown;
 
+  @Prop({
+    type: [
+      {
+        publicId: { type: String, required: true },
+        secureUrl: { type: String, required: true },
+      },
+    ],
+    default: [],
+  })
+  dreamImages: { publicId: string; secureUrl: string }[];
+
   @Prop({ type: [String], default: [] })
   catalogCharacterIds: string[];
 

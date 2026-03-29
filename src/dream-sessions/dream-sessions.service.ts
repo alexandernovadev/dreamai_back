@@ -60,12 +60,14 @@ export class DreamSessionsService {
 
   async create(dto: CreateDreamSessionDto) {
     const dreamsArray = this.toDreamArray(dto.dreams);
+    const dreamImages = this.toDreamImagesArray(dto.dreamImages);
     await this.validation.assertValid({
       status: dto.status,
       dreamKind: dto.dreamKind,
       userThought: dto.userThought,
       relatedLifeEventIds: dto.relatedLifeEventIds ?? [],
       dreams: dreamsArray,
+      dreamImages,
     });
     const derived = extractCatalogIdsFromDreamsJson(dreamsArray);
     const created = await this.dreamSessionModel.create({
@@ -76,6 +78,7 @@ export class DreamSessionsService {
       relatedLifeEventIds: dto.relatedLifeEventIds ?? [],
       userThought: dto.userThought,
       dreams: dreamsArray,
+      dreamImages,
       catalogCharacterIds: derived.catalogCharacterIds,
       catalogLocationIds: derived.catalogLocationIds,
       catalogObjectIds: derived.catalogObjectIds,
@@ -115,6 +118,9 @@ export class DreamSessionsService {
       $set.catalogLocationIds = derived.catalogLocationIds;
       $set.catalogObjectIds = derived.catalogObjectIds;
     }
+    if (dto.dreamImages !== undefined) {
+      $set.dreamImages = this.toDreamImagesArray(dto.dreamImages);
+    }
 
     const doc = await this.dreamSessionModel
       .findByIdAndUpdate(id, { $set }, { new: true, runValidators: true })
@@ -147,6 +153,10 @@ export class DreamSessionsService {
         dto.dreams !== undefined
           ? this.toDreamArray(dto.dreams)
           : this.jsonToDreamArray(existing.dreams),
+      dreamImages:
+        dto.dreamImages !== undefined
+          ? this.toDreamImagesArray(dto.dreamImages)
+          : this.jsonToDreamImagesArray(existing.dreamImages),
     };
   }
 
@@ -167,6 +177,30 @@ export class DreamSessionsService {
     if (!Array.isArray(json)) {
       throw new UnprocessableEntityException(
         'stored dreams must be a JSON array',
+      );
+    }
+    return json as unknown[];
+  }
+
+  private toDreamImagesArray(value: unknown[] | undefined): unknown[] {
+    if (value === undefined) {
+      return [];
+    }
+    if (!Array.isArray(value)) {
+      throw new UnprocessableEntityException(
+        'dreamImages must be a JSON array',
+      );
+    }
+    return value;
+  }
+
+  private jsonToDreamImagesArray(json: unknown): unknown[] {
+    if (json === null || json === undefined) {
+      return [];
+    }
+    if (!Array.isArray(json)) {
+      throw new UnprocessableEntityException(
+        'stored dreamImages must be a JSON array',
       );
     }
     return json as unknown[];

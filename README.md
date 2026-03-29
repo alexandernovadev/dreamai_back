@@ -20,7 +20,8 @@ Sirven como contrato compartido con el front y como referencia al implementar en
 - **`GET /`** — metadatos JSON (`version` desde `package.json`, `date` fijada en el último `yarn build`, `environment` vía `APP_ENV` o `NODE_ENV`).
 - **`GET /health`** — salud para balanceadores y contenedores (`{ "status": "ok" }`).
 - **`POST /ai/suggest-entities`** — sugerencias de personajes, lugares y objetos a partir de texto libre (opcional; por defecto **DeepSeek**; requiere `AI_API_KEY`; ver [docs/ai-suggestions.md](docs/ai-suggestions.md)).
-- **`/dream-sessions`** — CRUD de sesiones; `GET` admite query `catalogCharacterId`, `catalogLocationId`, `catalogObjectId`, `lifeEventId` (AND de filtros).
+- **`POST /cloudinary/upload-signature`** — parámetros para subida firmada de imágenes (requiere `CLOUDINARY_*` en el servidor).
+- **`/dream-sessions`** — CRUD de sesiones; `dreamImages` (referencias Cloudinary) opcional; `GET` admite query `catalogCharacterId`, `catalogLocationId`, `catalogObjectId`, `lifeEventId` (AND de filtros).
 - **`/catalog/characters`**, **`/catalog/locations`**, **`/catalog/objects`** — CRUD de entradas de catálogo (Mongo `ObjectId` como `id`).
 - **`GET /catalog/.../:id/dream-sessions`** — sueños vinculados a esa entrada de catálogo.
 - **`/life-events`** — CRUD de eventos de vida (`title`, `note`, `occurredAt`); **`GET /life-events/:id/dream-sessions`** — sueños que referencian ese id en `relatedLifeEventIds`.

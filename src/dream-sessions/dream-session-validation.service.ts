@@ -1,4 +1,5 @@
 import { Injectable, UnprocessableEntityException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import {
@@ -53,17 +54,22 @@ const FEELING_KINDS = new Set([
 const ARCHETYPES = new Set<string>(Object.values(Archetype));
 const LOCATION_SETTINGS = new Set<string>(Object.values(LocationSetting));
 
+/** Máximo de imágenes por sesión (referencias Cloudinary). */
+export const MAX_DREAM_IMAGES = 30;
+
 export interface DreamSessionValidateInput {
   status: DreamSessionStatus;
   dreamKind: DreamKind;
   userThought?: string | null;
   relatedLifeEventIds: string[];
   dreams: unknown[];
+  dreamImages?: unknown[];
 }
 
 @Injectable()
 export class DreamSessionValidationService {
   constructor(
+    private readonly config: ConfigService,
     @InjectModel(CatalogCharacter.name)
     private readonly catalogCharacterModel: Model<CatalogCharacterDocument>,
     @InjectModel(CatalogLocation.name)
@@ -77,6 +83,7 @@ export class DreamSessionValidationService {
   async assertValid(input: DreamSessionValidateInput): Promise<void> {
     this.validateStatusAndKind(input);
     this.validateReflectionsDone(input);
+    this.validateDreamImages(input);
     this.validateDreamsShape(input);
     const derived = extractCatalogIdsFromDreamsJson(input.dreams);
     await this.assertCatalogReferences(derived);
@@ -116,6 +123,65 @@ export class DreamSessionValidationService {
       throw new UnprocessableEntityException(
         'En REFLECTIONS_DONE se requiere userThought no vacío.',
       );
+    }
+  }
+
+  private validateDreamImages(input: DreamSessionValidateInput): void {
+    const raw = input.dreamImages;
+    if (raw === undefined || raw === null) {
+      return;
+    }
+    if (!Array.isArray(raw)) {
+      throw new UnprocessableEntityException('dreamImages debe ser un array.');
+    }
+    if (raw.length > MAX_DREAM_IMAGES) {
+      throw new UnprocessableEntityException(
+        `dreamImages admite como máximo ${MAX_DREAM_IMAGES} elementos.`,
+      );
+    }
+    const cloudName = this.config.get<string>('CLOUDINARY_CLOUD_NAME')?.trim();
+    raw.forEach((item, i) => {
+      const path = `dreamImages[${i}]`;
+      if (!item || typeof item !== 'object' || Array.isArray(item)) {
+        throw new UnprocessableEntityException(`${path} debe ser un objeto.`);
+      }
+      const o = item as Record<string, unknown>;
+      if (typeof o.publicId !== 'string' || o.publicId.trim().length === 0) {
+        throw new UnprocessableEntityException(
+          `${path}.publicId es obligatorio (string no vacío).`,
+        );
+      }
+      if (typeof o.secureUrl !== 'string' || o.secureUrl.trim().length === 0) {
+        throw new UnprocessableEntityException(
+          `${path}.secureUrl es obligatorio (string no vacío).`,
+        );
+      }
+      if (!this.isCloudinarySecureUrl(o.secureUrl.trim(), cloudName)) {
+        throw new UnprocessableEntityException(
+          `${path}.secureUrl debe ser una URL HTTPS de Cloudinary (res.cloudinary.com${
+            cloudName ? ` para cloud "${cloudName}"` : ''
+          }).`,
+        );
+      }
+    });
+  }
+
+  private isCloudinarySecureUrl(
+    url: string,
+    cloudName: string | undefined,
+  ): boolean {
+    try {
+      const u = new URL(url);
+      if (u.protocol !== 'https:' || u.hostname !== 'res.cloudinary.com') {
+        return false;
+      }
+      if (cloudName) {
+        const prefix = `/${cloudName}/`;
+        return u.pathname.includes(prefix);
+      }
+      return true;
+    } catch {
+      return false;
     }
   }
 

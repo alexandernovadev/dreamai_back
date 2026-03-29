@@ -6,7 +6,9 @@ import {
   IsEnum,
   IsOptional,
   IsString,
+  ValidateNested,
 } from 'class-validator';
+import { DreamImageDto } from './dream-image.dto';
 
 export class CreateDreamSessionDto {
   @IsDateString()
@@ -36,4 +38,11 @@ export class CreateDreamSessionDto {
   @IsArray()
   @Type(() => Object)
   dreams?: unknown[];
+
+  /** Imágenes asociadas al sueño (referencias Cloudinary). */
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => DreamImageDto)
+  dreamImages?: DreamImageDto[];
 }
