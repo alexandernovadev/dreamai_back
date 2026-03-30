@@ -14,12 +14,14 @@ import { CreateDreamSessionDto } from './dto/create-dream-session.dto';
 import { QueryDreamSessionsDto } from './dto/query-dream-sessions.dto';
 import { SuggestDreamElementsDto } from './dto/suggest-dream-elements.dto';
 import { UpdateDreamSessionDto } from './dto/update-dream-session.dto';
+import { DreamSessionAnalyticsService } from './dream-session-analytics.service';
 import { DreamSessionService } from './dream-session.service';
 
 @Controller('dream-sessions')
 export class DreamSessionController {
   constructor(
     private readonly dreamSessionService: DreamSessionService,
+    private readonly dreamSessionAnalytics: DreamSessionAnalyticsService,
     private readonly dreamElementsAi: DreamElementsAiService,
     private readonly dreamThoughtAi: DreamThoughtAiService,
   ) {}
@@ -32,6 +34,12 @@ export class DreamSessionController {
   @Get()
   findAll(@Query() query: QueryDreamSessionsDto) {
     return this.dreamSessionService.findAll(query);
+  }
+
+  /** Resumen global (toda la vida): conteos, histograma de lucidez, top entidades en sueños. */
+  @Get('analytics/overview')
+  analyticsOverview() {
+    return this.dreamSessionAnalytics.getOverview();
   }
 
   /**

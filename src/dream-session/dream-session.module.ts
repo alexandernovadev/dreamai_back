@@ -28,6 +28,7 @@ import {
 } from './schemas/dream-session.schema';
 import { DreamElementsAiService } from './dream-elements-ai.service';
 import { DreamThoughtAiService } from './dream-thought-ai.service';
+import { DreamSessionAnalyticsService } from './dream-session-analytics.service';
 import { DreamSessionController } from './dream-session.controller';
 import { DreamSessionService } from './dream-session.service';
 
@@ -47,6 +48,7 @@ import { DreamSessionService } from './dream-session.service';
   controllers: [DreamSessionController],
   providers: [
     DreamSessionService,
+    DreamSessionAnalyticsService,
     DreamElementsAiService,
     DreamThoughtAiService,
   ],
