@@ -44,6 +44,12 @@ export class DreamSessionController {
     return this.dreamElementsAi.suggestForSession(id, dto.locale);
   }
 
+  /** Sesión + catálogos resueltos en batch (sin N+1 en el cliente). */
+  @Get(':id/hydrated')
+  findOneHydrated(@Param('id') id: string) {
+    return this.dreamSessionService.findOneHydrated(id);
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.dreamSessionService.findOne(id);

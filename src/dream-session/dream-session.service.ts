@@ -20,10 +20,40 @@ import {
   DreamSession,
   DreamSessionDocument,
 } from './schemas/dream-session.schema';
+import type { HydratedDreamSessionPayload } from './dream-session-hydrated.types';
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_LIMIT = 20;
 const MAX_LIMIT = 100;
+
+function uniqValidObjectIds(ids: unknown[]): string[] {
+  const set = new Set<string>();
+  for (const x of ids) {
+    const s =
+      typeof x === 'string' ? x : x != null ? String(x) : null;
+    if (s && Types.ObjectId.isValid(s)) set.add(s);
+  }
+  return [...set];
+}
+
+function idStr(v: unknown): string {
+  if (v != null && typeof (v as { toString?: () => string }).toString === 'function') {
+    return String((v as { toString: () => string }).toString());
+  }
+  return String(v);
+}
+
+function mapById<T>(
+  docs: Array<Record<string, unknown>>,
+  pair: (d: Record<string, unknown>) => [string, T],
+): Record<string, T> {
+  const out: Record<string, T> = {};
+  for (const d of docs) {
+    const [k, v] = pair(d);
+    out[k] = v;
+  }
+  return out;
+}
 
 @Injectable()
 export class DreamSessionService {
@@ -96,6 +126,133 @@ export class DreamSessionService {
       throw new NotFoundException(`DreamSession ${id} not found`);
     }
     return doc;
+  }
+
+  /**
+   * Sesión + mapas de catálogo por id (batch `$in`), sin N+1 desde el cliente.
+   */
+  async findOneHydrated(id: string): Promise<HydratedDreamSessionPayload> {
+    if (!Types.ObjectId.isValid(id)) {
+      throw new NotFoundException(`DreamSession ${id} not found`);
+    }
+    const session = await this.dreamSessionModel.findById(id).lean().exec();
+    if (!session) {
+      throw new NotFoundException(`DreamSession ${id} not found`);
+    }
+
+    const emptyHydrated = (): HydratedDreamSessionPayload['hydrated'] => ({
+      characters: {},
+      locations: {},
+      objects: {},
+      contextLife: {},
+      events: {},
+      feelings: {},
+    });
+
+    const entities = session.analysis?.entities;
+    if (!entities) {
+      return { session, hydrated: emptyHydrated() };
+    }
+
+    const charIds = uniqValidObjectIds(
+      (entities.characters ?? []).map((r) => r.characterId),
+    );
+    const locIds = uniqValidObjectIds(
+      (entities.locations ?? []).map((r) => r.locationId),
+    );
+    const objIds = uniqValidObjectIds(
+      (entities.objects ?? []).map((r) => r.objectId),
+    );
+    const ctxIds = uniqValidObjectIds(
+      (entities.contextLife ?? []).map((r) => r.contextLifeId),
+    );
+    const evIds = uniqValidObjectIds(
+      (entities.events ?? []).map((r) => r.eventId),
+    );
+    const feelIds = uniqValidObjectIds(
+      (entities.feelings ?? []).map((r) => r.feelingId),
+    );
+
+    const [
+      charDocs,
+      locDocs,
+      objDocs,
+      ctxDocs,
+      evDocs,
+      feelDocs,
+    ] = await Promise.all([
+      this.findLeanByIds(this.characterModel, charIds, '_id name'),
+      this.findLeanByIds(this.locationModel, locIds, '_id name'),
+      this.findLeanByIds(this.dreamObjectModel, objIds, '_id name'),
+      this.findLeanByIds(this.contextLifeModel, ctxIds, '_id title'),
+      this.findLeanByIds(this.dreamEventModel, evIds, '_id label'),
+      this.findLeanByIds(this.feelingModel, feelIds, '_id kind intensity notes'),
+    ]);
+
+    const characters = mapById(charDocs, (d) => {
+      const oid = idStr(d._id);
+      return [oid, { id: oid, name: String(d.name) }];
+    });
+    const locations = mapById(locDocs, (d) => {
+      const oid = idStr(d._id);
+      return [oid, { id: oid, name: String(d.name) }];
+    });
+    const objects = mapById(objDocs, (d) => {
+      const oid = idStr(d._id);
+      return [oid, { id: oid, name: String(d.name) }];
+    });
+    const contextLife = mapById(ctxDocs, (d) => {
+      const oid = idStr(d._id);
+      return [oid, { id: oid, title: String(d.title) }];
+    });
+    const events = mapById(evDocs, (d) => {
+      const oid = idStr(d._id);
+      return [oid, { id: oid, label: String(d.label) }];
+    });
+    const feelings = mapById(feelDocs, (d) => {
+      const oid = idStr(d._id);
+      return [
+        oid,
+        {
+          id: oid,
+          kind: String(d.kind),
+          intensity:
+            d.intensity === undefined || d.intensity === null
+              ? undefined
+              : Number(d.intensity),
+          notes:
+            d.notes === undefined || d.notes === null
+              ? undefined
+              : String(d.notes),
+        },
+      ];
+    });
+
+    return {
+      session,
+      hydrated: {
+        characters,
+        locations,
+        objects,
+        contextLife,
+        events,
+        feelings,
+      },
+    };
+  }
+
+  private async findLeanByIds(
+    model: Model<unknown>,
+    ids: string[],
+    select: string,
+  ): Promise<Array<Record<string, unknown>>> {
+    if (ids.length === 0) return [];
+    const oids = ids.map((i) => new Types.ObjectId(i));
+    return model
+      .find({ _id: { $in: oids } } as never)
+      .select(select)
+      .lean()
+      .exec() as Promise<Array<Record<string, unknown>>>;
   }
 
   async update(
