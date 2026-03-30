@@ -72,25 +72,27 @@ Rules:
 - Omit empty arrays if nothing fits; use [] not null.
 - Keep names concise; descriptions in the same language as the narrative unless locale asks otherwise.`;
 
-const THOUGHT_READING_PROMPT = `You write one advanced oneiric reading (dream scholarship / oneirology style): interpretive prose, not a summary, not therapy, not clinical or psychological counselling, not self-help "suggestions" or homework.
+const THOUGHT_READING_PROMPT = `You produce an INTERPRETATION of what this dream may mean or express — not a summary, not a paraphrase, not a retelling of the plot. Do not open with "In this dream…" to recount events; at most a short anchor, then move to meaning: motives, tensions, symbols, emotional charge, possible echoes of waking life.
 
-The user message is a JSON object. It contains:
+Style: advanced oneiric interpretation (symbolic, narrative, archetypal, thematic). Multiple hypotheses are welcome ("one reading might be…", "another layer could be…"). The point is sense-making and plausible significance, not compressing the story into fewer words.
+
+The user message is a JSON object:
 - "narrative": the dream text (required).
 - Optional: "userThought", "dreamKind", "perspectives", "lucidityLevel".
-- "hydrated": ordered lists (each item includes a name/label/title and, when present in the catalog, "description"): "characters", "locations", "objects", "contextLife" (waking-life contexts), "events" (in-dream happenings), "feelings". Order matches how the dreamer linked them. Empty arrays mean nothing was linked.
+- "hydrated": ordered lists with names/labels/titles and optional "description" for characters, locations, objects, contextLife (waking-life contexts), in-dream events, feelings. Order reflects how the dreamer linked them.
 
-Waking life (vigilia): use hydrated.contextLife as real-life contexts the dreamer associated with this dream. Integrate with dream imagery when warranted.
+Waking life: hydrated.contextLife is what the dreamer tied to this dream in vigil — use it to explore bridges between life circumstances and dream imagery when relevant. Do not invent waking-life facts not present in the JSON.
 
-Use expert dream-reading approaches (symbolic, narrative, thematic). Offer interpretive possibilities as approximate readings, not absolute truth. Do not diagnose or treat. Do not write imperatives like "you should" or therapeutic prescriptions.
+Hard limits: not therapy, not diagnosis, not medical or psychological treatment advice, no "you should" prescriptions. No clinical labels.
 
-Return ONLY valid JSON with this exact shape (no markdown, no commentary):
+Return ONLY valid JSON (no markdown):
 {
-  "reading": "<your reading in prose>"
+  "reading": "<interpretive prose — what it might mean, not a synopsis>"
 }
 Rules:
-- Match the output language to the locale hint when present; otherwise match the narrative language.
-- Several paragraphs as needed; no bullet lists inside the string unless the narrative style calls for it.
-- If hydrated.contextLife is empty, do not invent waking-life events.`;
+- Output language: follow the locale hint when present; else match the narrative language.
+- Several paragraphs; avoid bullet lists inside the string unless essential.
+- If hydrated.contextLife is empty, do not fabricate waking-life events.`;
 
 @Injectable()
 export class AiSuggestionsService {
@@ -147,8 +149,6 @@ export class AiSuggestionsService {
     const baseUrl = (
       process.env.AI_BASE_URL?.trim() || 'https://api.deepseek.com/v1'
     ).replace(/\/$/, '');
-
-    console.log('contextPayload', JSON.stringify(contextPayload, null, 2));
 
     const userContent =
       (locale ? `Locale hint for output language: ${locale}\n\n---\n\n` : '') +
