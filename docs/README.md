@@ -1,4 +1,4 @@
 # Documentación
 
 - **[Guía del backend](GUIA-DREAMIA-BACK.md)** — entorno y rutas actuales.
-- **[Sugerencias con IA](ai-suggestions.md)** — `POST /ai/suggest-entities`.
+- **[IA (Elementos y Reflexión)](ai-suggestions.md)** — endpoints por sesión (`/dream-sessions/.../ai/...`).

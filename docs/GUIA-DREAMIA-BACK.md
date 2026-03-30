@@ -10,7 +10,7 @@
 | `APP_ENV` | Opcional; metadatos en `GET /`. |
 | `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` | Obligatorias para `POST /cloudinary/upload`. |
 | `CLOUDINARY_ROOT_PREFIX` | Opcional; prefijo de carpetas (default `dreamia`). |
-| `AI_API_KEY` / `OPENAI_API_KEY` | Para `POST /ai/suggest-entities`. |
+| `AI_API_KEY` / `OPENAI_API_KEY` | Para IA en `POST /dream-sessions/:id/ai/...` (ver [ai-suggestions.md](ai-suggestions.md)). |
 | `AI_MODEL`, `AI_BASE_URL` | Opcionales; ver [ai-suggestions.md](ai-suggestions.md). |
 
 Copiá `.env.example` a `.env` en la raíz del repo.
@@ -21,7 +21,8 @@ Copiá `.env.example` a `.env` en la raíz del repo.
 |--------|------|-------------|
 | GET | `/` | Metadatos de la app. |
 | GET | `/health` | Salud del proceso. |
-| POST | `/ai/suggest-entities` | Sugerencias de entidades desde texto. |
+| POST | `/dream-sessions/:id/ai/suggest-elements` | Sugerencias Elementos (lee `rawNarrative` de la sesión). |
+| POST | `/dream-sessions/:id/ai/suggest-thought` | Lectura sugerida Reflexión. |
 | POST | `/cloudinary/upload` | Subida de imagen (`multipart` campo `file`). Query `context` opcional. |
 
 Detalle del flujo de IA: **[ai-suggestions.md](ai-suggestions.md)**.

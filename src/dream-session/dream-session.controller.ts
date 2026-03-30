@@ -9,6 +9,7 @@ import {
   Query,
 } from '@nestjs/common';
 import { DreamElementsAiService } from './dream-elements-ai.service';
+import { DreamThoughtAiService } from './dream-thought-ai.service';
 import { CreateDreamSessionDto } from './dto/create-dream-session.dto';
 import { QueryDreamSessionsDto } from './dto/query-dream-sessions.dto';
 import { SuggestDreamElementsDto } from './dto/suggest-dream-elements.dto';
@@ -20,6 +21,7 @@ export class DreamSessionController {
   constructor(
     private readonly dreamSessionService: DreamSessionService,
     private readonly dreamElementsAi: DreamElementsAiService,
+    private readonly dreamThoughtAi: DreamThoughtAiService,
   ) {}
 
   @Post()
@@ -42,6 +44,18 @@ export class DreamSessionController {
     @Body() dto: SuggestDreamElementsDto,
   ) {
     return this.dreamElementsAi.suggestForSession(id, dto.locale);
+  }
+
+  /**
+   * Reflexión: lectura sugerida desde `rawNarrative` + `userThought` (si existe).
+   * No persiste.
+   */
+  @Post(':id/ai/suggest-thought')
+  suggestThought(
+    @Param('id') id: string,
+    @Body() dto: SuggestDreamElementsDto,
+  ) {
+    return this.dreamThoughtAi.suggestForSession(id, dto.locale);
   }
 
   /** Sesión + catálogos resueltos en batch (sin N+1 en el cliente). */

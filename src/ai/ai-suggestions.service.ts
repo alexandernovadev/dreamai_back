@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import type {
   SuggestDreamElementsResult,
-  SuggestEntitiesResult,
+  SuggestThoughtReadingResult,
   SuggestedArchetype,
   SuggestedCharacter,
   SuggestedDreamEvent,
@@ -29,40 +29,6 @@ const SETTINGS: readonly SuggestedLocationSetting[] = [
   'ABSTRACT',
 ];
 
-const SYSTEM_PROMPT = `You extract entities from a dream narrative for a journaling app.
-Return ONLY valid JSON with this exact shape (no markdown, no commentary):
-{
-  "characters": [
-    {
-      "name": "short label",
-      "description": "1-3 sentences: who they are in the dream",
-      "isKnown": true or false (whether the dreamer would recognize them as someone from waking life),
-      "archetype": "SHADOW" | "ANIMA_ANIMUS" | "WISE_FIGURE" | "PERSONA" | "UNKNOWN",
-      "quote": "optional short verbatim excerpt from the user's text"
-    }
-  ],
-  "locations": [
-    {
-      "name": "short label",
-      "description": "1-3 sentences",
-      "isFamiliar": true or false (feels like a known place vs wholly dreamlike),
-      "setting": "URBAN" | "NATURE" | "INDOOR" | "ABSTRACT",
-      "quote": "optional excerpt"
-    }
-  ],
-  "objects": [
-    {
-      "name": "short label",
-      "description": "optional",
-      "quote": "optional excerpt"
-    }
-  ]
-}
-Rules:
-- Do not interpret the dream therapeutically; only label entities and settings.
-- Omit empty arrays if nothing fits; use [] not null.
-- Keep names concise; descriptions in the same language as the narrative unless locale asks otherwise.`;
-
 const DREAM_ELEMENTS_SYSTEM_PROMPT = `You extract structured elements from a dream narrative for a journaling app.
 Return ONLY valid JSON with this exact shape (no markdown, no commentary):
 {
@@ -72,8 +38,7 @@ Return ONLY valid JSON with this exact shape (no markdown, no commentary):
       "description": "1-3 sentences: who they are in the dream",
       "isKnown": true or false (whether the dreamer would recognize them as someone from waking life),
       "archetype": "SHADOW" | "ANIMA_ANIMUS" | "WISE_FIGURE" | "PERSONA" | "UNKNOWN",
-      "confidence": 0.0 to 1.0 (how sure this is a distinct figure worth cataloguing),
-      "quote": "optional short verbatim excerpt from the user's text"
+      "confidence": 0.0 to 1.0 (how sure this is a distinct figure worth cataloguing)
     }
   ],
   "locations": [
@@ -82,24 +47,21 @@ Return ONLY valid JSON with this exact shape (no markdown, no commentary):
       "description": "1-3 sentences",
       "isFamiliar": true or false (feels like a known place vs wholly dreamlike),
       "setting": "URBAN" | "NATURE" | "INDOOR" | "ABSTRACT",
-      "confidence": 0.0 to 1.0,
-      "quote": "optional excerpt"
+      "confidence": 0.0 to 1.0
     }
   ],
   "objects": [
     {
       "name": "short label",
       "description": "optional",
-      "confidence": 0.0 to 1.0,
-      "quote": "optional excerpt"
+      "confidence": 0.0 to 1.0
     }
   ],
   "events": [
     {
       "label": "short label for a plot beat or happening inside the dream (not a waking-life calendar event)",
       "description": "optional",
-      "confidence": 0.0 to 1.0,
-      "quote": "optional excerpt"
+      "confidence": 0.0 to 1.0
     }
   ]
 }
@@ -110,38 +72,18 @@ Rules:
 - Omit empty arrays if nothing fits; use [] not null.
 - Keep names concise; descriptions in the same language as the narrative unless locale asks otherwise.`;
 
+const THOUGHT_READING_PROMPT = `You help someone reflect on a dream they wrote in a personal journal app.
+Return ONLY valid JSON with this exact shape (no markdown, no commentary):
+{
+  "reading": "2–5 short paragraphs: a gentle, literary reflection that weaves together what happens in the dream and (if provided) the dreamer's own waking note. Invite curiosity, images, and questions — not diagnosis, not therapy, not medical or psychological claims. Avoid saying what the dream 'means' with certainty."
+}
+Rules:
+- Match the output language to the locale hint when present; otherwise match the narrative language.
+- Stay warm and concise; no bullet lists inside the string unless the narrative style calls for it.
+- If there is no user note, reflect only from the dream narrative.`;
+
 @Injectable()
 export class AiSuggestionsService {
-  suggestEntities(
-    text: string,
-    locale?: string,
-  ): Promise<SuggestEntitiesResult> {
-    const apiKey =
-      process.env.AI_API_KEY?.trim() || process.env.OPENAI_API_KEY?.trim();
-    if (!apiKey) {
-      throw new ServiceUnavailableException(
-        'AI suggestions are not configured (set AI_API_KEY or OPENAI_API_KEY).',
-      );
-    }
-    const model = process.env.AI_MODEL?.trim() || 'deepseek-chat';
-    const baseUrl = (
-      process.env.AI_BASE_URL?.trim() || 'https://api.deepseek.com/v1'
-    ).replace(/\/$/, '');
-
-    const userContent =
-      (locale ? `Locale hint for output language: ${locale}\n\n---\n\n` : '') +
-      text.trim();
-
-    return this.callOpenAiCompatible({
-      apiKey,
-      model,
-      baseUrl,
-      userContent,
-      systemPrompt: SYSTEM_PROMPT,
-      normalize: normalizeSuggestEntities,
-    });
-  }
-
   /**
    * Extracción ampliada para el paso Elementos: incluye eventos oníricos (no contexto vital).
    * No persiste; el emparejado con catálogo ocurre en `DreamElementsAiService`.
@@ -173,6 +115,47 @@ export class AiSuggestionsService {
       userContent,
       systemPrompt: DREAM_ELEMENTS_SYSTEM_PROMPT,
       normalize: normalizeSuggestDreamElements,
+      temperature: 0.3,
+    });
+  }
+
+  /**
+   * Lectura sugerida para el paso Reflexión (narrativa + nota del usuario opcional).
+   */
+  suggestThoughtReading(
+    rawNarrative: string,
+    userThought?: string,
+    locale?: string,
+  ): Promise<SuggestThoughtReadingResult> {
+    const apiKey =
+      process.env.AI_API_KEY?.trim() || process.env.OPENAI_API_KEY?.trim();
+    if (!apiKey) {
+      throw new ServiceUnavailableException(
+        'AI suggestions are not configured (set AI_API_KEY or OPENAI_API_KEY).',
+      );
+    }
+    const model = process.env.AI_MODEL?.trim() || 'deepseek-chat';
+    const baseUrl = (
+      process.env.AI_BASE_URL?.trim() || 'https://api.deepseek.com/v1'
+    ).replace(/\/$/, '');
+
+    let userContent =
+      (locale ? `Locale hint for output language: ${locale}\n\n---\n\n` : '') +
+      'Dream narrative:\n' +
+      rawNarrative.trim();
+    if (userThought && userThought.trim() !== '') {
+      userContent +=
+        '\n\n---\n\nDreamer note (after waking):\n' + userThought.trim();
+    }
+
+    return this.callOpenAiCompatible({
+      apiKey,
+      model,
+      baseUrl,
+      userContent,
+      systemPrompt: THOUGHT_READING_PROMPT,
+      normalize: normalizeSuggestThoughtReading,
+      temperature: 0.45,
     });
   }
 
@@ -183,7 +166,9 @@ export class AiSuggestionsService {
     userContent: string;
     systemPrompt: string;
     normalize: (data: unknown) => T;
+    temperature?: number;
   }): Promise<T> {
+    const temperature = opts.temperature ?? 0.3;
     const res = await fetch(`${opts.baseUrl}/chat/completions`, {
       method: 'POST',
       headers: {
@@ -192,7 +177,7 @@ export class AiSuggestionsService {
       },
       body: JSON.stringify({
         model: opts.model,
-        temperature: 0.3,
+        temperature,
         response_format: { type: 'json_object' },
         messages: [
           { role: 'system', content: opts.systemPrompt },
@@ -229,22 +214,6 @@ export class AiSuggestionsService {
   }
 }
 
-function normalizeSuggestEntities(data: unknown): SuggestEntitiesResult {
-  if (!data || typeof data !== 'object') {
-    return emptyResult();
-  }
-  const o = data as Record<string, unknown>;
-  return {
-    characters: normalizeCharacters(o.characters),
-    locations: normalizeLocations(o.locations),
-    objects: normalizeObjects(o.objects),
-  };
-}
-
-function emptyResult(): SuggestEntitiesResult {
-  return { characters: [], locations: [], objects: [] };
-}
-
 function normalizeCharacters(v: unknown): SuggestedCharacter[] {
   if (!Array.isArray(v)) return [];
   const out: SuggestedCharacter[] = [];
@@ -260,7 +229,6 @@ function normalizeCharacters(v: unknown): SuggestedCharacter[] {
       description: description.slice(0, 2000),
       isKnown: Boolean(x.isKnown),
       archetype: coerceArchetype(x.archetype),
-      quote: optionalQuote(x.quote),
     };
     const c = coerceConfidence(x.confidence);
     if (c !== undefined) row.confidence = c;
@@ -284,7 +252,6 @@ function normalizeLocations(v: unknown): SuggestedLocation[] {
       description: description.slice(0, 2000),
       isFamiliar: Boolean(x.isFamiliar),
       setting: coerceSetting(x.setting),
-      quote: optionalQuote(x.quote),
     };
     const c = coerceConfidence(x.confidence);
     if (c !== undefined) row.confidence = c;
@@ -306,7 +273,6 @@ function normalizeObjects(v: unknown): SuggestedDreamObject[] {
     const row: SuggestedDreamObject = {
       name: name.slice(0, 200),
       description: description ? description.slice(0, 2000) : undefined,
-      quote: optionalQuote(x.quote),
     };
     const c = coerceConfidence(x.confidence);
     if (c !== undefined) row.confidence = c;
@@ -352,7 +318,6 @@ function normalizeDreamEvents(v: unknown): SuggestedDreamEvent[] {
     const row: SuggestedDreamEvent = {
       label: label.slice(0, 500),
       description: description ? description.slice(0, 2000) : undefined,
-      quote: optionalQuote(x.quote),
     };
     const c = coerceConfidence(x.confidence);
     if (c !== undefined) row.confidence = c;
@@ -364,13 +329,6 @@ function normalizeDreamEvents(v: unknown): SuggestedDreamEvent[] {
 function coerceConfidence(v: unknown): number | undefined {
   if (typeof v !== 'number' || Number.isNaN(v)) return undefined;
   return Math.min(1, Math.max(0, v));
-}
-
-function optionalQuote(v: unknown): string | undefined {
-  if (typeof v !== 'string') return undefined;
-  const t = v.trim();
-  if (!t) return undefined;
-  return t.slice(0, 500);
 }
 
 function coerceArchetype(v: unknown): SuggestedArchetype {
@@ -387,4 +345,20 @@ function coerceSetting(v: unknown): SuggestedLocationSetting {
   return SETTINGS.includes(u as SuggestedLocationSetting)
     ? (u as SuggestedLocationSetting)
     : 'ABSTRACT';
+}
+
+function normalizeSuggestThoughtReading(
+  data: unknown,
+): SuggestThoughtReadingResult {
+  if (!data || typeof data !== 'object') {
+    return { reading: '' };
+  }
+  const o = data as Record<string, unknown>;
+  const raw =
+    typeof o.reading === 'string'
+      ? o.reading.trim()
+      : typeof o.text === 'string'
+        ? o.text.trim()
+        : '';
+  return { reading: raw.slice(0, 50_000) };
 }

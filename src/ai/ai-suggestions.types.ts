@@ -1,4 +1,4 @@
-/** Salida normalizada de `POST /ai/suggest-entities` (sugerencias, no persistidas). */
+/** Tipos compartidos por los prompts de IA (Elementos, Reflexión). */
 
 export type SuggestedArchetype =
   | 'SHADOW'
@@ -18,8 +18,6 @@ export interface SuggestedCharacter {
   description: string;
   isKnown: boolean;
   archetype: SuggestedArchetype;
-  /** Fragmento del texto de entrada donde aparece la figura (opcional). */
-  quote?: string;
   /** Autoevaluación del modelo 0–1 (opcional). */
   confidence?: number;
 }
@@ -29,28 +27,19 @@ export interface SuggestedLocation {
   description: string;
   isFamiliar: boolean;
   setting: SuggestedLocationSetting;
-  quote?: string;
   confidence?: number;
 }
 
 export interface SuggestedDreamObject {
   name: string;
   description?: string;
-  quote?: string;
   confidence?: number;
-}
-
-export interface SuggestEntitiesResult {
-  characters: SuggestedCharacter[];
-  locations: SuggestedLocation[];
-  objects: SuggestedDreamObject[];
 }
 
 /** Hecho narrativo del sueño (catálogo `dream_events`, campo `label`, acotado al sueño). */
 export interface SuggestedDreamEvent {
   label: string;
   description?: string;
-  quote?: string;
   confidence?: number;
 }
 
@@ -60,4 +49,9 @@ export interface SuggestDreamElementsResult {
   locations: SuggestedLocation[];
   objects: SuggestedDreamObject[];
   events: SuggestedDreamEvent[];
+}
+
+/** Lectura sugerida para el paso Reflexión (no es consejo clínico). */
+export interface SuggestThoughtReadingResult {
+  reading: string;
 }

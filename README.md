@@ -1,12 +1,12 @@
 # Dreamia — backend
 
-API en [NestJS](https://nestjs.com/). En esta versión el repo expone **metadatos**, **salud**, **sugerencias de entidades con IA** y **subida de imágenes a Cloudinary**. El dominio de sueños / persistencia se reintroducirá según el nuevo modelo.
+API en [NestJS](https://nestjs.com/). Expone **metadatos**, **salud**, **dominio de sueños** (sesiones, catálogos), **IA por sesión** y **subida de imágenes a Cloudinary**.
 
-## Endpoints
+## Endpoints (resumen)
 
 - **`GET /`** — `version`, `date` (build), `environment`
 - **`GET /health`** — `{ "status": "ok" }`
-- **`POST /ai/suggest-entities`** — sugerencias desde texto (requiere `AI_API_KEY` en servidor; ver [docs/ai-suggestions.md](docs/ai-suggestions.md))
+- **`/dream-sessions`** — CRUD de sesiones; **IA**: `POST .../ai/suggest-elements`, `POST .../ai/suggest-thought` (requiere `AI_API_KEY`; ver [docs/ai-suggestions.md](docs/ai-suggestions.md))
 - **`POST /cloudinary/upload`** — multipart `file`; query `context`: `dreams` | `characters` | `locations` | `objects`
 
 Variables: copiar `.env.example` a `.env`. Guía breve: [docs/GUIA-DREAMIA-BACK.md](docs/GUIA-DREAMIA-BACK.md).
