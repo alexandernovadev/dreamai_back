@@ -42,10 +42,6 @@ export class CreateDreamSessionDto {
   @MaxLength(50_000)
   userThought?: string;
 
-  /**
-   * Optional manual field; IA pipeline will set this later.
-   * TODO (IA): prefer generating via pipeline rather than trusting client in production.
-   */
   @IsOptional()
   @IsString()
   @MaxLength(50_000)
