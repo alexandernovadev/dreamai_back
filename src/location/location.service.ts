@@ -78,8 +78,9 @@ export class LocationService {
     }
 
     const locationId = new Types.ObjectId(id);
-    const dreamFilter: Record<string, Types.ObjectId> = {
-      'analysis.entities.locations.locationId': locationId,
+    const idPath = 'analysis.entities.locations.locationId';
+    const dreamFilter = {
+      $or: [{ [idPath]: locationId }, { [idPath]: locationId.toString() }],
     };
 
     const [dreams, count] = await Promise.all([

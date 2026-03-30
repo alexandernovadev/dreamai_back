@@ -100,9 +100,10 @@ export class CharacterService {
     }
 
     const characterId = new Types.ObjectId(id);
-    // Clave con puntos: es un solo campo en el documento del sueño (path anidado en Mongo).
-    const dreamFilter: Record<string, Types.ObjectId> = {
-      'analysis.entities.characters.characterId': characterId,
+    const idPath = 'analysis.entities.characters.characterId';
+    // ObjectId o string hex (refs desde JSON / PATCH pueden persistir como string).
+    const dreamFilter = {
+      $or: [{ [idPath]: characterId }, { [idPath]: characterId.toString() }],
     };
 
     // Lista de sueños que mencionan este personaje + cantidad (mismo filtro).

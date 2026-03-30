@@ -72,8 +72,9 @@ export class FeelingService {
     }
 
     const feelingId = new Types.ObjectId(id);
-    const dreamFilter: Record<string, Types.ObjectId> = {
-      'analysis.entities.feelings.feelingId': feelingId,
+    const idPath = 'analysis.entities.feelings.feelingId';
+    const dreamFilter = {
+      $or: [{ [idPath]: feelingId }, { [idPath]: feelingId.toString() }],
     };
 
     const [dreams, count] = await Promise.all([

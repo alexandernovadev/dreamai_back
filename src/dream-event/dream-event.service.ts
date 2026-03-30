@@ -71,8 +71,9 @@ export class DreamEventService {
     }
 
     const eventId = new Types.ObjectId(id);
-    const dreamFilter: Record<string, Types.ObjectId> = {
-      'analysis.entities.events.eventId': eventId,
+    const idPath = 'analysis.entities.events.eventId';
+    const dreamFilter = {
+      $or: [{ [idPath]: eventId }, { [idPath]: eventId.toString() }],
     };
 
     const [dreams, count] = await Promise.all([

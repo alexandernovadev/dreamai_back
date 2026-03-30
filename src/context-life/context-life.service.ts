@@ -70,8 +70,12 @@ export class ContextLifeService {
     }
 
     const contextLifeId = new Types.ObjectId(id);
-    const dreamFilter: Record<string, Types.ObjectId> = {
-      'analysis.entities.contextLife.contextLifeId': contextLifeId,
+    const idPath = 'analysis.entities.contextLife.contextLifeId';
+    const dreamFilter = {
+      $or: [
+        { [idPath]: contextLifeId },
+        { [idPath]: contextLifeId.toString() },
+      ],
     };
 
     const [dreams, count] = await Promise.all([
