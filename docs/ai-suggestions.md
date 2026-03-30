@@ -115,3 +115,43 @@ El prompt del servidor pide **no** hacer interpretación terapéutica; solo etiq
 
 - El texto del sueño se envía al **proveedor** configurado (por defecto **DeepSeek**, `api.deepseek.com`). Evaluá políticas de privacidad y región antes de producción.
 - Cada llamada consume tokens; conviene límites en el cliente y textos razonables (el servidor limita `text` a 16k caracteres).
+
+---
+
+## Elementos: sugerencias + catálogo (`POST /dream-sessions/:id/ai/suggest-elements`)
+
+Para el paso **Elementos**, el servidor lee **`rawNarrative`** de la sesión (no hace falta reenviar el texto), llama al modelo con un prompt ampliado (personajes, lugares, objetos, **contexto de vida**, **eventos oníricos**; **sin** sentimientos) y **empareja** cada nombre/título con Mongo (misma cadena, comparación case-insensitive con anclas).
+
+**No persiste** nada ni modifica `analysis.entities` ya guardados: solo devuelve JSON para que el cliente lo use como staging hasta que el usuario pulse **Guardar**.
+
+### Petición
+
+| Campo | Tipo | Obligatorio | Descripción |
+|-------|------|-------------|-------------|
+| `locale` | string | No | Igual que en `/ai/suggest-entities` (pista de idioma para el modelo). |
+
+**Ejemplo:**
+
+```bash
+curl -s -X POST "http://localhost:3000/dream-sessions/<SESSION_ID>/ai/suggest-elements" \
+  -H "Content-Type: application/json" \
+  -d '{"locale":"es"}'
+```
+
+### Respuesta (`schemaVersion`: 1)
+
+Cinco listas; cada ítem tiene:
+
+- **`fromAi`**: payload sugerido por el modelo (incluye `confidence` 0–1 cuando el modelo lo informa).
+- **`match`**: si existe fila en catálogo, `{ "catalogId", "canonicalLabel" }`; si no, `null`.
+  - Eventos oníricos (`dream_events`) se buscan **solo** para el `dreamSessionId` de esa sesión (`label` igual, case-insensitive).
+  - Personajes, lugares, objetos y contextos de vida son catálogos globales (`name` o `title`).
+- **`emphasizeNew`**: `true` cuando **no** hay `match`, el modelo informó `confidence` ≥ **0.85** y el cliente puede resaltar la fila como “nueva con alta confianza”.
+
+### Errores
+
+| Código | Situación |
+|--------|-----------|
+| **400** | La sesión no tiene `rawNarrative` no vacío. |
+| **404** | `id` de sesión inválido o inexistente. |
+| **503** / **502** | Igual que `/ai/suggest-entities` (IA no configurada o fallo del proveedor). |

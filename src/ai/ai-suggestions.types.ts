@@ -20,6 +20,8 @@ export interface SuggestedCharacter {
   archetype: SuggestedArchetype;
   /** Fragmento del texto de entrada donde aparece la figura (opcional). */
   quote?: string;
+  /** Autoevaluación del modelo 0–1 (opcional). */
+  confidence?: number;
 }
 
 export interface SuggestedLocation {
@@ -28,16 +30,43 @@ export interface SuggestedLocation {
   isFamiliar: boolean;
   setting: SuggestedLocationSetting;
   quote?: string;
+  confidence?: number;
 }
 
 export interface SuggestedDreamObject {
   name: string;
   description?: string;
   quote?: string;
+  confidence?: number;
 }
 
 export interface SuggestEntitiesResult {
   characters: SuggestedCharacter[];
   locations: SuggestedLocation[];
   objects: SuggestedDreamObject[];
+}
+
+/** Contexto de vida despierta (catálogo `context_lives`, campo `title`). */
+export interface SuggestedContextLife {
+  title: string;
+  description?: string;
+  quote?: string;
+  confidence?: number;
+}
+
+/** Hecho narrativo del sueño (catálogo `dream_events`, campo `label`, acotado al sueño). */
+export interface SuggestedDreamEvent {
+  label: string;
+  description?: string;
+  quote?: string;
+  confidence?: number;
+}
+
+/** Salida del modelo para el flujo Elementos (incluye contexto de vida y eventos oníricos; sin sentimientos). */
+export interface SuggestDreamElementsResult {
+  characters: SuggestedCharacter[];
+  locations: SuggestedLocation[];
+  objects: SuggestedDreamObject[];
+  contextLife: SuggestedContextLife[];
+  events: SuggestedDreamEvent[];
 }

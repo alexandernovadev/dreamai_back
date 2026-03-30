@@ -4,9 +4,12 @@ import {
   ServiceUnavailableException,
 } from '@nestjs/common';
 import type {
+  SuggestDreamElementsResult,
   SuggestEntitiesResult,
   SuggestedArchetype,
   SuggestedCharacter,
+  SuggestedContextLife,
+  SuggestedDreamEvent,
   SuggestedDreamObject,
   SuggestedLocation,
   SuggestedLocationSetting,
@@ -61,6 +64,60 @@ Rules:
 - Omit empty arrays if nothing fits; use [] not null.
 - Keep names concise; descriptions in the same language as the narrative unless locale asks otherwise.`;
 
+const DREAM_ELEMENTS_SYSTEM_PROMPT = `You extract structured elements from a dream narrative for a journaling app.
+Return ONLY valid JSON with this exact shape (no markdown, no commentary):
+{
+  "characters": [
+    {
+      "name": "short label",
+      "description": "1-3 sentences: who they are in the dream",
+      "isKnown": true or false (whether the dreamer would recognize them as someone from waking life),
+      "archetype": "SHADOW" | "ANIMA_ANIMUS" | "WISE_FIGURE" | "PERSONA" | "UNKNOWN",
+      "confidence": 0.0 to 1.0 (how sure this is a distinct figure worth cataloguing),
+      "quote": "optional short verbatim excerpt from the user's text"
+    }
+  ],
+  "locations": [
+    {
+      "name": "short label",
+      "description": "1-3 sentences",
+      "isFamiliar": true or false (feels like a known place vs wholly dreamlike),
+      "setting": "URBAN" | "NATURE" | "INDOOR" | "ABSTRACT",
+      "confidence": 0.0 to 1.0,
+      "quote": "optional excerpt"
+    }
+  ],
+  "objects": [
+    {
+      "name": "short label",
+      "description": "optional",
+      "confidence": 0.0 to 1.0,
+      "quote": "optional excerpt"
+    }
+  ],
+  "contextLife": [
+    {
+      "title": "short label for a waking-life context (work, family, health, projects) implied or referenced",
+      "description": "optional 1-2 sentences",
+      "confidence": 0.0 to 1.0,
+      "quote": "optional excerpt"
+    }
+  ],
+  "events": [
+    {
+      "label": "short label for a plot beat or happening inside the dream (not a waking-life calendar event)",
+      "description": "optional",
+      "confidence": 0.0 to 1.0,
+      "quote": "optional excerpt"
+    }
+  ]
+}
+Rules:
+- Do NOT output emotions, moods, or a "feelings" array. Skip inner feelings as entities.
+- Do not interpret the dream therapeutically; only label entities, places, objects, life context, and in-dream happenings.
+- Omit empty arrays if nothing fits; use [] not null.
+- Keep names concise; descriptions in the same language as the narrative unless locale asks otherwise.`;
+
 @Injectable()
 export class AiSuggestionsService {
   suggestEntities(
@@ -88,15 +145,53 @@ export class AiSuggestionsService {
       model,
       baseUrl,
       userContent,
+      systemPrompt: SYSTEM_PROMPT,
+      normalize: normalizeSuggestEntities,
     });
   }
 
-  private async callOpenAiCompatible(opts: {
+  /**
+   * Extracción ampliada para el paso Elementos: incluye contexto de vida y eventos oníricos.
+   * No persiste; el emparejado con catálogo ocurre en `DreamElementsAiService`.
+   */
+  suggestDreamElements(
+    text: string,
+    locale?: string,
+  ): Promise<SuggestDreamElementsResult> {
+    const apiKey =
+      process.env.AI_API_KEY?.trim() || process.env.OPENAI_API_KEY?.trim();
+    if (!apiKey) {
+      throw new ServiceUnavailableException(
+        'AI suggestions are not configured (set AI_API_KEY or OPENAI_API_KEY).',
+      );
+    }
+    const model = process.env.AI_MODEL?.trim() || 'deepseek-chat';
+    const baseUrl = (
+      process.env.AI_BASE_URL?.trim() || 'https://api.deepseek.com/v1'
+    ).replace(/\/$/, '');
+
+    const userContent =
+      (locale ? `Locale hint for output language: ${locale}\n\n---\n\n` : '') +
+      text.trim();
+
+    return this.callOpenAiCompatible({
+      apiKey,
+      model,
+      baseUrl,
+      userContent,
+      systemPrompt: DREAM_ELEMENTS_SYSTEM_PROMPT,
+      normalize: normalizeSuggestDreamElements,
+    });
+  }
+
+  private async callOpenAiCompatible<T>(opts: {
     apiKey: string;
     model: string;
     baseUrl: string;
     userContent: string;
-  }): Promise<SuggestEntitiesResult> {
+    systemPrompt: string;
+    normalize: (data: unknown) => T;
+  }): Promise<T> {
     const res = await fetch(`${opts.baseUrl}/chat/completions`, {
       method: 'POST',
       headers: {
@@ -108,7 +203,7 @@ export class AiSuggestionsService {
         temperature: 0.3,
         response_format: { type: 'json_object' },
         messages: [
-          { role: 'system', content: SYSTEM_PROMPT },
+          { role: 'system', content: opts.systemPrompt },
           { role: 'user', content: opts.userContent },
         ],
       }),
@@ -138,7 +233,7 @@ export class AiSuggestionsService {
       throw new BadGatewayException('AI returned invalid JSON.');
     }
 
-    return normalizeSuggestEntities(parsed);
+    return opts.normalize(parsed);
   }
 }
 
@@ -168,13 +263,16 @@ function normalizeCharacters(v: unknown): SuggestedCharacter[] {
     const description =
       typeof x.description === 'string' ? x.description.trim() : '';
     if (!name || !description) continue;
-    out.push({
+    const row: SuggestedCharacter = {
       name: name.slice(0, 200),
       description: description.slice(0, 2000),
       isKnown: Boolean(x.isKnown),
       archetype: coerceArchetype(x.archetype),
       quote: optionalQuote(x.quote),
-    });
+    };
+    const c = coerceConfidence(x.confidence);
+    if (c !== undefined) row.confidence = c;
+    out.push(row);
   }
   return out;
 }
@@ -189,13 +287,16 @@ function normalizeLocations(v: unknown): SuggestedLocation[] {
     const description =
       typeof x.description === 'string' ? x.description.trim() : '';
     if (!name || !description) continue;
-    out.push({
+    const row: SuggestedLocation = {
       name: name.slice(0, 200),
       description: description.slice(0, 2000),
       isFamiliar: Boolean(x.isFamiliar),
       setting: coerceSetting(x.setting),
       quote: optionalQuote(x.quote),
-    });
+    };
+    const c = coerceConfidence(x.confidence);
+    if (c !== undefined) row.confidence = c;
+    out.push(row);
   }
   return out;
 }
@@ -210,13 +311,91 @@ function normalizeObjects(v: unknown): SuggestedDreamObject[] {
     if (!name) continue;
     const description =
       typeof x.description === 'string' ? x.description.trim() : undefined;
-    out.push({
+    const row: SuggestedDreamObject = {
       name: name.slice(0, 200),
       description: description ? description.slice(0, 2000) : undefined,
       quote: optionalQuote(x.quote),
-    });
+    };
+    const c = coerceConfidence(x.confidence);
+    if (c !== undefined) row.confidence = c;
+    out.push(row);
   }
   return out;
+}
+
+function normalizeSuggestDreamElements(
+  data: unknown,
+): SuggestDreamElementsResult {
+  if (!data || typeof data !== 'object') {
+    return emptyDreamElementsResult();
+  }
+  const o = data as Record<string, unknown>;
+  return {
+    characters: normalizeCharacters(o.characters),
+    locations: normalizeLocations(o.locations),
+    objects: normalizeObjects(o.objects),
+    contextLife: normalizeContextLife(o.contextLife),
+    events: normalizeDreamEvents(o.events),
+  };
+}
+
+function emptyDreamElementsResult(): SuggestDreamElementsResult {
+  return {
+    characters: [],
+    locations: [],
+    objects: [],
+    contextLife: [],
+    events: [],
+  };
+}
+
+function normalizeContextLife(v: unknown): SuggestedContextLife[] {
+  if (!Array.isArray(v)) return [];
+  const out: SuggestedContextLife[] = [];
+  for (const item of v) {
+    if (!item || typeof item !== 'object') continue;
+    const x = item as Record<string, unknown>;
+    const title = typeof x.title === 'string' ? x.title.trim() : '';
+    if (!title) continue;
+    const description =
+      typeof x.description === 'string' ? x.description.trim() : undefined;
+    const row: SuggestedContextLife = {
+      title: title.slice(0, 500),
+      description: description ? description.slice(0, 2000) : undefined,
+      quote: optionalQuote(x.quote),
+    };
+    const c = coerceConfidence(x.confidence);
+    if (c !== undefined) row.confidence = c;
+    out.push(row);
+  }
+  return out;
+}
+
+function normalizeDreamEvents(v: unknown): SuggestedDreamEvent[] {
+  if (!Array.isArray(v)) return [];
+  const out: SuggestedDreamEvent[] = [];
+  for (const item of v) {
+    if (!item || typeof item !== 'object') continue;
+    const x = item as Record<string, unknown>;
+    const label = typeof x.label === 'string' ? x.label.trim() : '';
+    if (!label) continue;
+    const description =
+      typeof x.description === 'string' ? x.description.trim() : undefined;
+    const row: SuggestedDreamEvent = {
+      label: label.slice(0, 500),
+      description: description ? description.slice(0, 2000) : undefined,
+      quote: optionalQuote(x.quote),
+    };
+    const c = coerceConfidence(x.confidence);
+    if (c !== undefined) row.confidence = c;
+    out.push(row);
+  }
+  return out;
+}
+
+function coerceConfidence(v: unknown): number | undefined {
+  if (typeof v !== 'number' || Number.isNaN(v)) return undefined;
+  return Math.min(1, Math.max(0, v));
 }
 
 function optionalQuote(v: unknown): string | undefined {

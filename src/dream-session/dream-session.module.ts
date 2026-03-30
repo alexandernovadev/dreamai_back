@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
+import { AiModule } from '../ai/ai.module';
 import {
   Character,
   CharacterSchema,
@@ -25,11 +26,13 @@ import {
   DreamSession,
   DreamSessionSchema,
 } from './schemas/dream-session.schema';
+import { DreamElementsAiService } from './dream-elements-ai.service';
 import { DreamSessionController } from './dream-session.controller';
 import { DreamSessionService } from './dream-session.service';
 
 @Module({
   imports: [
+    AiModule,
     MongooseModule.forFeature([
       { name: DreamSession.name, schema: DreamSessionSchema },
       { name: Character.name, schema: CharacterSchema },
@@ -41,7 +44,7 @@ import { DreamSessionService } from './dream-session.service';
     ]),
   ],
   controllers: [DreamSessionController],
-  providers: [DreamSessionService],
+  providers: [DreamSessionService, DreamElementsAiService],
   exports: [MongooseModule],
 })
 export class DreamSessionModule {}

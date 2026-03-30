@@ -5,5 +5,6 @@ import { AiSuggestionsService } from './ai-suggestions.service';
 @Module({
   controllers: [AiController],
   providers: [AiSuggestionsService],
+  exports: [AiSuggestionsService],
 })
 export class AiModule {}
