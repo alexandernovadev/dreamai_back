@@ -44,7 +44,7 @@ export class FeelingService {
     const [data, total] = await Promise.all([
       this.feelingModel
         .find(filter as never)
-        .sort({ createdAt: -1 })
+        .sort({ updatedAt: -1 })
         .skip(skip)
         .limit(limit)
         .lean()

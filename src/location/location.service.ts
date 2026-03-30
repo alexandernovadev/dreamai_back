@@ -46,7 +46,7 @@ export class LocationService {
     const [data, total] = await Promise.all([
       this.locationModel
         .find(filter as never)
-        .sort({ createdAt: -1 })
+        .sort({ updatedAt: -1 })
         .skip(skip)
         .limit(limit)
         .lean()

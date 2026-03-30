@@ -43,7 +43,7 @@ export class DreamEventService {
     const [data, total] = await Promise.all([
       this.dreamEventModel
         .find(filter as never)
-        .sort({ createdAt: -1 })
+        .sort({ updatedAt: -1 })
         .skip(skip)
         .limit(limit)
         .lean()

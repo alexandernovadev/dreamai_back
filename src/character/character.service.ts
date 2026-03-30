@@ -65,7 +65,7 @@ export class CharacterService {
     const [data, total] = await Promise.all([
       this.characterModel
         .find(filter as never)
-        .sort({ createdAt: -1 })
+        .sort({ updatedAt: -1 })
         .skip(skip)
         .limit(limit)
         .lean()

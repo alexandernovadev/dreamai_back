@@ -8,6 +8,7 @@ import { DreamSessionModule } from './dream-session/dream-session.module';
 import { DreamObjectModule } from './dream-object/dream-object.module';
 import { FeelingModule } from './feeling/feeling.module';
 import { LocationModule } from './location/location.module';
+import { SignalsModule } from './signals/signals.module';
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
 import { DatabaseModule } from './database/database.module';
 import { AppController } from './app.controller';
@@ -26,6 +27,7 @@ import { AppService } from './app.service';
     DreamSessionModule,
     ContextLifeModule,
     FeelingModule,
+    SignalsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
