@@ -2,17 +2,14 @@ import { Type } from 'class-transformer';
 import {
   IsArray,
   IsNumber,
-  IsObject,
   IsOptional,
   IsString,
   Max,
   Min,
+  ValidateNested,
 } from 'class-validator';
+import { DreamEntitiesInputDto } from './dream-entities-input.dto';
 
-/**
- * Optional nested analysis on create/update.
- * TODO (Elements): validate `entities` ObjectIds against catalog collections; for now we persist as sent.
- */
 export class DreamAnalysisInputDto {
   @IsOptional()
   @IsArray()
@@ -27,6 +24,7 @@ export class DreamAnalysisInputDto {
   lucidityLevel?: number;
 
   @IsOptional()
-  @IsObject()
-  entities?: Record<string, unknown>;
+  @ValidateNested()
+  @Type(() => DreamEntitiesInputDto)
+  entities?: DreamEntitiesInputDto;
 }

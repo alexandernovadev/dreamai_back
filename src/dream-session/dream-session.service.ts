@@ -1,8 +1,19 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
+import { Character } from '../character/schemas/character.schema';
+import { ContextLife } from '../context-life/schemas/context-life.schema';
+import { DreamEvent } from '../dream-event/schemas/dream-event.schema';
+import { DreamObject } from '../dream-object/schemas/dream-object.schema';
+import { Feeling } from '../feeling/schemas/feeling.schema';
+import { Location } from '../location/schemas/location.schema';
 import { escapeRegex } from '../common/utils/escape-regex';
 import { CreateDreamSessionDto } from './dto/create-dream-session.dto';
+import { DreamEntitiesInputDto } from './dto/dream-entities-input.dto';
 import { QueryDreamSessionsDto } from './dto/query-dream-sessions.dto';
 import { UpdateDreamSessionDto } from './dto/update-dream-session.dto';
 import {
@@ -10,13 +21,6 @@ import {
   DreamSessionDocument,
 } from './schemas/dream-session.schema';
 
-/**
- * CRUD básico de sesiones de sueño (`dream_sessions`).
- *
- * TODO (IA): pipeline de resumen / `aiSummarize` (no en este servicio).
- * TODO (Elements): crear o enlazar entidades de catálogo y validar refs en `analysis.entities`.
- * Este servicio solo persiste lo que envía el cliente en `analysis` y campos raíz.
- */
 const DEFAULT_PAGE = 1;
 const DEFAULT_LIMIT = 20;
 const MAX_LIMIT = 100;
@@ -26,9 +30,24 @@ export class DreamSessionService {
   constructor(
     @InjectModel(DreamSession.name)
     private dreamSessionModel: Model<DreamSessionDocument>,
+    @InjectModel(Character.name)
+    private characterModel: Model<unknown>,
+    @InjectModel(Location.name)
+    private locationModel: Model<unknown>,
+    @InjectModel(DreamObject.name)
+    private dreamObjectModel: Model<unknown>,
+    @InjectModel(DreamEvent.name)
+    private dreamEventModel: Model<unknown>,
+    @InjectModel(ContextLife.name)
+    private contextLifeModel: Model<unknown>,
+    @InjectModel(Feeling.name)
+    private feelingModel: Model<unknown>,
   ) {}
 
   async create(dto: CreateDreamSessionDto): Promise<DreamSessionDocument> {
+    if (dto.analysis?.entities) {
+      await this.validateEntities(dto.analysis.entities);
+    }
     const payload: Record<string, unknown> = {
       ...dto,
       timestamp: dto.timestamp ? new Date(dto.timestamp) : undefined,
@@ -86,6 +105,9 @@ export class DreamSessionService {
     if (!Types.ObjectId.isValid(id)) {
       throw new NotFoundException(`DreamSession ${id} not found`);
     }
+    if (dto.analysis?.entities) {
+      await this.validateEntities(dto.analysis.entities);
+    }
     const update: Record<string, unknown> = { ...dto };
     if (dto.timestamp !== undefined) {
       update.timestamp = dto.timestamp ? new Date(dto.timestamp) : null;
@@ -106,6 +128,56 @@ export class DreamSessionService {
     const res = await this.dreamSessionModel.findByIdAndDelete(id).exec();
     if (!res) {
       throw new NotFoundException(`DreamSession ${id} not found`);
+    }
+  }
+
+  /**
+   * Validates that every ObjectId in `entities` actually exists in its collection.
+   * Runs all checks in parallel; throws 400 listing every missing id.
+   */
+  private async validateEntities(
+    entities: DreamEntitiesInputDto,
+  ): Promise<void> {
+    const checks: Array<Promise<string | null>> = [];
+
+    const assertExists = (
+      model: Model<unknown>,
+      id: string,
+      label: string,
+    ): Promise<string | null> =>
+      model
+        .exists({ _id: new Types.ObjectId(id) })
+        .exec()
+        .then((found) => (found ? null : `${label} ${id} not found`));
+
+    for (const r of entities.characters ?? []) {
+      checks.push(assertExists(this.characterModel, r.characterId, 'Character'));
+    }
+    for (const r of entities.locations ?? []) {
+      checks.push(assertExists(this.locationModel, r.locationId, 'Location'));
+    }
+    for (const r of entities.objects ?? []) {
+      checks.push(assertExists(this.dreamObjectModel, r.objectId, 'DreamObject'));
+    }
+    for (const r of entities.events ?? []) {
+      checks.push(assertExists(this.dreamEventModel, r.eventId, 'DreamEvent'));
+    }
+    for (const r of entities.contextLife ?? []) {
+      checks.push(
+        assertExists(this.contextLifeModel, r.contextLifeId, 'ContextLife'),
+      );
+    }
+    for (const r of entities.feelings ?? []) {
+      checks.push(assertExists(this.feelingModel, r.feelingId, 'Feeling'));
+    }
+
+    if (checks.length === 0) return;
+
+    const results = await Promise.all(checks);
+    const missing = results.filter(Boolean) as string[];
+
+    if (missing.length > 0) {
+      throw new BadRequestException(missing);
     }
   }
 
