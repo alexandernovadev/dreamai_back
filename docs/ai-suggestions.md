@@ -62,7 +62,7 @@ Cuatro listas (`characters`, `locations`, `objects`, `events`); cada ítem tiene
 
 ## Reflexión: `POST /dream-sessions/:id/ai/suggest-thought`
 
-Lectura sugerida a partir de **`rawNarrative`** y, si existe, **`userThought`**. **No persiste**; el cliente puede guardar el texto en `aiSummarize` con `PATCH /dream-sessions/:id`.
+Lectura onírica avanzada: el servidor **no** envía el documento `session` a la IA. Arma un JSON con `narrative`, campos opcionales (`userThought`, `dreamKind`, `perspectives`, `lucidityLevel`) y **`hydrated`** como listas ordenadas **sin ids** (nombres, títulos, etiquetas, sentimientos; `contextLife` con título/descripción de vigilia). Exige **`rawNarrative`** no vacío en la sesión. **No persiste**; el cliente puede guardar el texto en `aiSummarize` con `PATCH /dream-sessions/:id`.
 
 ### Petición
 
@@ -74,7 +74,7 @@ Lectura sugerida a partir de **`rawNarrative`** y, si existe, **`userThought`**.
 
 | Campo | Descripción |
 |-------|-------------|
-| `suggestion` | Texto de lectura sugerida (no es consejo clínico). |
+| `suggestion` | Prosa de lectura interpretativa (no terapia ni diagnóstico). |
 
 Errores: mismos códigos que en Elementos (400 si falta narrativa, 404, 503, 502).
 

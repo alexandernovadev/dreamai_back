@@ -181,33 +181,78 @@ export class DreamSessionService {
       evDocs,
       feelDocs,
     ] = await Promise.all([
-      this.findLeanByIds(this.characterModel, charIds, '_id name'),
-      this.findLeanByIds(this.locationModel, locIds, '_id name'),
-      this.findLeanByIds(this.dreamObjectModel, objIds, '_id name'),
-      this.findLeanByIds(this.contextLifeModel, ctxIds, '_id title'),
-      this.findLeanByIds(this.dreamEventModel, evIds, '_id label'),
+      this.findLeanByIds(this.characterModel, charIds, '_id name description'),
+      this.findLeanByIds(this.locationModel, locIds, '_id name description'),
+      this.findLeanByIds(this.dreamObjectModel, objIds, '_id name description'),
+      this.findLeanByIds(this.contextLifeModel, ctxIds, '_id title description'),
+      this.findLeanByIds(this.dreamEventModel, evIds, '_id label description'),
       this.findLeanByIds(this.feelingModel, feelIds, '_id kind intensity notes'),
     ]);
 
     const characters = mapById(charDocs, (d) => {
       const oid = idStr(d._id);
-      return [oid, { id: oid, name: String(d.name) }];
+      const row: {
+        id: string;
+        name: string;
+        description?: string;
+      } = { id: oid, name: String(d.name) };
+      const desc = d.description;
+      if (desc !== undefined && desc !== null && String(desc).trim() !== '') {
+        row.description = String(desc).slice(0, 5000);
+      }
+      return [oid, row];
     });
     const locations = mapById(locDocs, (d) => {
       const oid = idStr(d._id);
-      return [oid, { id: oid, name: String(d.name) }];
+      const row: {
+        id: string;
+        name: string;
+        description?: string;
+      } = { id: oid, name: String(d.name) };
+      const desc = d.description;
+      if (desc !== undefined && desc !== null && String(desc).trim() !== '') {
+        row.description = String(desc).slice(0, 5000);
+      }
+      return [oid, row];
     });
     const objects = mapById(objDocs, (d) => {
       const oid = idStr(d._id);
-      return [oid, { id: oid, name: String(d.name) }];
+      const row: {
+        id: string;
+        name: string;
+        description?: string;
+      } = { id: oid, name: String(d.name) };
+      const desc = d.description;
+      if (desc !== undefined && desc !== null && String(desc).trim() !== '') {
+        row.description = String(desc).slice(0, 5000);
+      }
+      return [oid, row];
     });
     const contextLife = mapById(ctxDocs, (d) => {
       const oid = idStr(d._id);
-      return [oid, { id: oid, title: String(d.title) }];
+      const title = String(d.title);
+      const row: { id: string; title: string; description?: string } = {
+        id: oid,
+        title,
+      };
+      const desc = d.description;
+      if (desc !== undefined && desc !== null && String(desc).trim() !== '') {
+        row.description = String(desc).slice(0, 5000);
+      }
+      return [oid, row];
     });
     const events = mapById(evDocs, (d) => {
       const oid = idStr(d._id);
-      return [oid, { id: oid, label: String(d.label) }];
+      const row: {
+        id: string;
+        label: string;
+        description?: string;
+      } = { id: oid, label: String(d.label) };
+      const desc = d.description;
+      if (desc !== undefined && desc !== null && String(desc).trim() !== '') {
+        row.description = String(desc).slice(0, 5000);
+      }
+      return [oid, row];
     });
     const feelings = mapById(feelDocs, (d) => {
       const oid = idStr(d._id);

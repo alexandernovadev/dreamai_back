@@ -72,15 +72,25 @@ Rules:
 - Omit empty arrays if nothing fits; use [] not null.
 - Keep names concise; descriptions in the same language as the narrative unless locale asks otherwise.`;
 
-const THOUGHT_READING_PROMPT = `You help someone reflect on a dream they wrote in a personal journal app.
+const THOUGHT_READING_PROMPT = `You write one advanced oneiric reading (dream scholarship / oneirology style): interpretive prose, not a summary, not therapy, not clinical or psychological counselling, not self-help "suggestions" or homework.
+
+The user message is a JSON object. It contains:
+- "narrative": the dream text (required).
+- Optional: "userThought", "dreamKind", "perspectives", "lucidityLevel".
+- "hydrated": ordered lists (each item includes a name/label/title and, when present in the catalog, "description"): "characters", "locations", "objects", "contextLife" (waking-life contexts), "events" (in-dream happenings), "feelings". Order matches how the dreamer linked them. Empty arrays mean nothing was linked.
+
+Waking life (vigilia): use hydrated.contextLife as real-life contexts the dreamer associated with this dream. Integrate with dream imagery when warranted.
+
+Use expert dream-reading approaches (symbolic, narrative, thematic). Offer interpretive possibilities as approximate readings, not absolute truth. Do not diagnose or treat. Do not write imperatives like "you should" or therapeutic prescriptions.
+
 Return ONLY valid JSON with this exact shape (no markdown, no commentary):
 {
-  "reading": "2–5 short paragraphs: a gentle, literary reflection that weaves together what happens in the dream and (if provided) the dreamer's own waking note. Invite curiosity, images, and questions — not diagnosis, not therapy, not medical or psychological claims. Avoid saying what the dream 'means' with certainty."
+  "reading": "<your reading in prose>"
 }
 Rules:
 - Match the output language to the locale hint when present; otherwise match the narrative language.
-- Stay warm and concise; no bullet lists inside the string unless the narrative style calls for it.
-- If there is no user note, reflect only from the dream narrative.`;
+- Several paragraphs as needed; no bullet lists inside the string unless the narrative style calls for it.
+- If hydrated.contextLife is empty, do not invent waking-life events.`;
 
 @Injectable()
 export class AiSuggestionsService {
@@ -120,11 +130,10 @@ export class AiSuggestionsService {
   }
 
   /**
-   * Lectura sugerida para el paso Reflexión (narrativa + nota del usuario opcional).
+   * Lectura onírica avanzada: objeto completo `{ session, hydrated }` (catálogo resuelto, incl. contextLife).
    */
   suggestThoughtReading(
-    rawNarrative: string,
-    userThought?: string,
+    contextPayload: Record<string, unknown>,
     locale?: string,
   ): Promise<SuggestThoughtReadingResult> {
     const apiKey =
@@ -139,14 +148,12 @@ export class AiSuggestionsService {
       process.env.AI_BASE_URL?.trim() || 'https://api.deepseek.com/v1'
     ).replace(/\/$/, '');
 
-    let userContent =
+    console.log('contextPayload', JSON.stringify(contextPayload, null, 2));
+
+    const userContent =
       (locale ? `Locale hint for output language: ${locale}\n\n---\n\n` : '') +
-      'Dream narrative:\n' +
-      rawNarrative.trim();
-    if (userThought && userThought.trim() !== '') {
-      userContent +=
-        '\n\n---\n\nDreamer note (after waking):\n' + userThought.trim();
-    }
+      'Dream context (JSON, no database ids):\n\n' +
+      JSON.stringify(contextPayload);
 
     return this.callOpenAiCompatible({
       apiKey,
