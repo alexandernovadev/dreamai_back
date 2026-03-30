@@ -1,6 +1,5 @@
 import type {
   SuggestedCharacter,
-  SuggestedContextLife,
   SuggestedDreamEvent,
   SuggestedDreamObject,
   SuggestedLocation,
@@ -32,6 +31,5 @@ export interface DreamElementsSuggestResponse {
   characters: DreamElementRow<SuggestedCharacter>[];
   locations: DreamElementRow<SuggestedLocation>[];
   objects: DreamElementRow<SuggestedDreamObject>[];
-  contextLife: DreamElementRow<SuggestedContextLife>[];
   events: DreamElementRow<SuggestedDreamEvent>[];
 }

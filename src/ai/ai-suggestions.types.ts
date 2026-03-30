@@ -46,14 +46,6 @@ export interface SuggestEntitiesResult {
   objects: SuggestedDreamObject[];
 }
 
-/** Contexto de vida despierta (catálogo `context_lives`, campo `title`). */
-export interface SuggestedContextLife {
-  title: string;
-  description?: string;
-  quote?: string;
-  confidence?: number;
-}
-
 /** Hecho narrativo del sueño (catálogo `dream_events`, campo `label`, acotado al sueño). */
 export interface SuggestedDreamEvent {
   label: string;
@@ -62,11 +54,10 @@ export interface SuggestedDreamEvent {
   confidence?: number;
 }
 
-/** Salida del modelo para el flujo Elementos (incluye contexto de vida y eventos oníricos; sin sentimientos). */
+/** Salida del modelo para el flujo Elementos (eventos oníricos; sin sentimientos ni contexto vital — eso es manual). */
 export interface SuggestDreamElementsResult {
   characters: SuggestedCharacter[];
   locations: SuggestedLocation[];
   objects: SuggestedDreamObject[];
-  contextLife: SuggestedContextLife[];
   events: SuggestedDreamEvent[];
 }

@@ -120,7 +120,7 @@ El prompt del servidor pide **no** hacer interpretación terapéutica; solo etiq
 
 ## Elementos: sugerencias + catálogo (`POST /dream-sessions/:id/ai/suggest-elements`)
 
-Para el paso **Elementos**, el servidor lee **`rawNarrative`** de la sesión (no hace falta reenviar el texto), llama al modelo con un prompt ampliado (personajes, lugares, objetos, **contexto de vida**, **eventos oníricos**; **sin** sentimientos) y **empareja** cada nombre/título con Mongo (misma cadena, comparación case-insensitive con anclas).
+Para el paso **Elementos**, el servidor lee **`rawNarrative`** de la sesión (no hace falta reenviar el texto), llama al modelo con un prompt ampliado (personajes, lugares, objetos, **eventos oníricos**; **sin** sentimientos ni **contexto vital** — ese catálogo solo se rellena a mano) y **empareja** cada nombre/título con Mongo (misma cadena, comparación case-insensitive con anclas).
 
 **No persiste** nada ni modifica `analysis.entities` ya guardados: solo devuelve JSON para que el cliente lo use como staging hasta que el usuario pulse **Guardar**.
 
@@ -140,12 +140,12 @@ curl -s -X POST "http://localhost:3000/dream-sessions/<SESSION_ID>/ai/suggest-el
 
 ### Respuesta (`schemaVersion`: 1)
 
-Cinco listas; cada ítem tiene:
+Cuatro listas (`characters`, `locations`, `objects`, `events`); cada ítem tiene:
 
 - **`fromAi`**: payload sugerido por el modelo (incluye `confidence` 0–1 cuando el modelo lo informa).
 - **`match`**: si existe fila en catálogo, `{ "catalogId", "canonicalLabel" }`; si no, `null`.
   - Eventos oníricos (`dream_events`) se buscan **solo** para el `dreamSessionId` de esa sesión (`label` igual, case-insensitive).
-  - Personajes, lugares, objetos y contextos de vida son catálogos globales (`name` o `title`).
+  - Personajes, lugares y objetos son catálogos globales (`name`).
 - **`emphasizeNew`**: `true` cuando **no** hay `match`, el modelo informó `confidence` ≥ **0.85** y el cliente puede resaltar la fila como “nueva con alta confianza”.
 
 ### Errores

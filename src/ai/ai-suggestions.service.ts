@@ -8,7 +8,6 @@ import type {
   SuggestEntitiesResult,
   SuggestedArchetype,
   SuggestedCharacter,
-  SuggestedContextLife,
   SuggestedDreamEvent,
   SuggestedDreamObject,
   SuggestedLocation,
@@ -95,14 +94,6 @@ Return ONLY valid JSON with this exact shape (no markdown, no commentary):
       "quote": "optional excerpt"
     }
   ],
-  "contextLife": [
-    {
-      "title": "short label for a waking-life context (work, family, health, projects) implied or referenced",
-      "description": "optional 1-2 sentences",
-      "confidence": 0.0 to 1.0,
-      "quote": "optional excerpt"
-    }
-  ],
   "events": [
     {
       "label": "short label for a plot beat or happening inside the dream (not a waking-life calendar event)",
@@ -114,7 +105,8 @@ Return ONLY valid JSON with this exact shape (no markdown, no commentary):
 }
 Rules:
 - Do NOT output emotions, moods, or a "feelings" array. Skip inner feelings as entities.
-- Do not interpret the dream therapeutically; only label entities, places, objects, life context, and in-dream happenings.
+- Do NOT output waking-life context labels (work, family, projects, health themes as separate items); only label dream figures, places, objects, and in-dream happenings.
+- Do not interpret the dream therapeutically; only label entities, places, objects, and in-dream happenings.
 - Omit empty arrays if nothing fits; use [] not null.
 - Keep names concise; descriptions in the same language as the narrative unless locale asks otherwise.`;
 
@@ -151,7 +143,7 @@ export class AiSuggestionsService {
   }
 
   /**
-   * Extracción ampliada para el paso Elementos: incluye contexto de vida y eventos oníricos.
+   * Extracción ampliada para el paso Elementos: incluye eventos oníricos (no contexto vital).
    * No persiste; el emparejado con catálogo ocurre en `DreamElementsAiService`.
    */
   suggestDreamElements(
@@ -334,7 +326,6 @@ function normalizeSuggestDreamElements(
     characters: normalizeCharacters(o.characters),
     locations: normalizeLocations(o.locations),
     objects: normalizeObjects(o.objects),
-    contextLife: normalizeContextLife(o.contextLife),
     events: normalizeDreamEvents(o.events),
   };
 }
@@ -344,31 +335,8 @@ function emptyDreamElementsResult(): SuggestDreamElementsResult {
     characters: [],
     locations: [],
     objects: [],
-    contextLife: [],
     events: [],
   };
-}
-
-function normalizeContextLife(v: unknown): SuggestedContextLife[] {
-  if (!Array.isArray(v)) return [];
-  const out: SuggestedContextLife[] = [];
-  for (const item of v) {
-    if (!item || typeof item !== 'object') continue;
-    const x = item as Record<string, unknown>;
-    const title = typeof x.title === 'string' ? x.title.trim() : '';
-    if (!title) continue;
-    const description =
-      typeof x.description === 'string' ? x.description.trim() : undefined;
-    const row: SuggestedContextLife = {
-      title: title.slice(0, 500),
-      description: description ? description.slice(0, 2000) : undefined,
-      quote: optionalQuote(x.quote),
-    };
-    const c = coerceConfidence(x.confidence);
-    if (c !== undefined) row.confidence = c;
-    out.push(row);
-  }
-  return out;
 }
 
 function normalizeDreamEvents(v: unknown): SuggestedDreamEvent[] {

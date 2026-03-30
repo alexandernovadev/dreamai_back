@@ -11,10 +11,6 @@ import {
   CharacterDocument,
 } from '../character/schemas/character.schema';
 import {
-  ContextLife,
-  ContextLifeDocument,
-} from '../context-life/schemas/context-life.schema';
-import {
   DreamEvent,
   DreamEventDocument,
 } from '../dream-event/schemas/dream-event.schema';
@@ -47,8 +43,6 @@ export class DreamElementsAiService {
     private readonly locationModel: Model<LocationDocument>,
     @InjectModel(DreamObject.name)
     private readonly dreamObjectModel: Model<DreamObjectDocument>,
-    @InjectModel(ContextLife.name)
-    private readonly contextLifeModel: Model<ContextLifeDocument>,
     @InjectModel(DreamEvent.name)
     private readonly dreamEventModel: Model<DreamEventDocument>,
   ) {}
@@ -56,6 +50,7 @@ export class DreamElementsAiService {
   /**
    * Lee `rawNarrative` de la sesión, llama al modelo y empareja nombres/títulos con el catálogo.
    * No escribe en DB; no modifica `analysis.entities` ya persistidos.
+   * (Contexto vital no se sugiere por IA; el usuario lo añade manualmente.)
    */
   async suggestForSession(
     sessionId: string,
@@ -72,13 +67,7 @@ export class DreamElementsAiService {
     const raw = await this.aiSuggestions.suggestDreamElements(text, locale);
     const sessionOid = new Types.ObjectId(sessionId);
 
-    const [
-      characters,
-      locations,
-      objects,
-      contextLife,
-      events,
-    ] = await Promise.all([
+    const [characters, locations, objects, events] = await Promise.all([
       Promise.all(
         raw.characters.map((c) =>
           this.row(c, () => this.matchCharacter(c.name)),
@@ -93,11 +82,6 @@ export class DreamElementsAiService {
         raw.objects.map((o) => this.row(o, () => this.matchObject(o.name))),
       ),
       Promise.all(
-        raw.contextLife.map((cl) =>
-          this.row(cl, () => this.matchContextLife(cl.title)),
-        ),
-      ),
-      Promise.all(
         raw.events.map((ev) =>
           this.row(ev, () => this.matchDreamEvent(sessionOid, ev.label)),
         ),
@@ -110,7 +94,6 @@ export class DreamElementsAiService {
       characters,
       locations,
       objects,
-      contextLife,
       events,
     };
   }
@@ -172,21 +155,6 @@ export class DreamElementsAiService {
     return {
       catalogId: doc._id.toString(),
       canonicalLabel: doc.name,
-    };
-  }
-
-  private async matchContextLife(
-    title: string,
-  ): Promise<MatchedCatalogRef | null> {
-    const doc = await this.findOneByExactField(
-      this.contextLifeModel,
-      'title',
-      title,
-    );
-    if (!doc) return null;
-    return {
-      catalogId: doc._id.toString(),
-      canonicalLabel: doc.title,
     };
   }
 
