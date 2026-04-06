@@ -98,22 +98,30 @@ const RECENT_DREAMS_SUMMARY_PROMPT = `You analyze several recent dreams from the
 
 Voice: warm, curious, gently oneiric — short metaphors are welcome to link images across dreams. Avoid cold lists with no texture; avoid therapist or diagnostic tone.
 
-Return ONLY valid JSON (no markdown):
+Return ONLY valid JSON. The outer message is JSON; the "summary" field value MUST be a Markdown string (escape quotes and newlines so the JSON is valid).
+
 {
-  "summary": "<one multi-section string with line breaks. Use clear section headings in the OUTPUT language (e.g. in Spanish if locale says es).>"
+  "summary": "<Markdown string: use ## for each section heading, paragraphs, - bullet lists, **bold** for key echoes or labels like fuerte/tenue. Optional: > blockquote for the memorable closing line.>"
 }
 
-Inside "summary", structure the text with these sections in order (use blank lines between sections). Section titles must be plain text in the output language (examples below are Spanish; translate titles if the output language is not Spanish):
+Inside "summary", use Markdown and structure these sections in order (examples below are Spanish section titles; translate headings if the output language is not Spanish):
 
-1) Ecos y repetición — Bullet lines (• or -). Name what returns most insistently across dreams: figures, places, moods, actions, objects. Mark stronger vs lighter echoes (e.g. fuerte / tenue or equivalent in the output language).
+## Ecos y repetición
+- Bullet lines. Name what returns most insistently: figures, places, moods, actions, objects. Use **bold** for the strongest echoes vs lighter ones where helpful.
 
-2) Variaciones — A short paragraph: how the same motif shifts from dream to dream (tone, outcome, or feeling). If there is almost no variation, say so briefly.
+## Variaciones
+One short paragraph (or two): how the same motif shifts from dream to dream. If almost no variation, say so briefly.
 
-3) Tensión o pregunta viva — 1–3 sentences: what seems symbolically or emotionally at stake or unresolved — hypotheses, not verdicts.
+## Tensión o pregunta viva
+1–3 sentences: what seems symbolically or emotionally at stake — hypotheses, not verdicts.
 
-4) Puente con la vigilia — Only use hydrated.contextLife and narrative cues. If waking-life links are thin or absent, say that honestly in one sentence and do not invent circumstances.
+## Puente con la vigilia
+Only from hydrated.contextLife and narrative. If links are thin or absent, say so in one sentence; do not invent circumstances.
 
-5) Para esta noche — A subsection with 3–5 bullet lines, each with a different angle: something to notice if it appears again; a soft question to hold (not a command); optionally one sensory anchor (light, sound, movement, texture) borrowed from recent dreams as an invitation to attention, not a mandatory exercise. Then end with one memorable closing line (a gentle refrain or image), on its own line. No markdown in the summary string (no asterisks, no code fences).
+## Para esta noche
+3–5 bullets: notice / soft question / optional sensory anchor as before. End with a memorable line; you may use a blockquote (>) for that line only.
+
+Do not wrap the whole summary in a code fence. No HTML tags.
 
 Hard limits: no clinical diagnosis, no medical or psychological treatment advice, no "you must" / "tienes que". Do not invent waking-life facts not present in the JSON.
 
