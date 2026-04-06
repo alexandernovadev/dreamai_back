@@ -13,6 +13,7 @@ import { DreamRecentSummarizeAiService } from './dream-recent-summarize-ai.servi
 import { DreamThoughtAiService } from './dream-thought-ai.service';
 import { CreateDreamSessionDto } from './dto/create-dream-session.dto';
 import { QueryDreamSessionsDto } from './dto/query-dream-sessions.dto';
+import { SummarizeRecentDto } from './dto/summarize-recent.dto';
 import { SuggestDreamElementsDto } from './dto/suggest-dream-elements.dto';
 import { UpdateDreamSessionDto } from './dto/update-dream-session.dto';
 import { DreamSessionAnalyticsService } from './dream-session-analytics.service';
@@ -44,10 +45,13 @@ export class DreamSessionController {
     return this.dreamSessionAnalytics.getOverview();
   }
 
-  /** Últimos 10 sueños → patrones cruzados (IA). No persiste. */
+  /** Últimos N sueños (5–20) → patrones cruzados (IA). No persiste. */
   @Post('ai/summarize-recent')
-  summarizeRecent(@Body() dto: SuggestDreamElementsDto) {
-    return this.dreamRecentSummarizeAi.summarizeRecent(dto.locale);
+  summarizeRecent(@Body() dto: SummarizeRecentDto) {
+    return this.dreamRecentSummarizeAi.summarizeRecent(
+      dto.locale,
+      dto.limit ?? 10,
+    );
   }
 
   /**

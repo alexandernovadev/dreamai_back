@@ -11,14 +11,15 @@ export class DreamRecentSummarizeAiService {
   ) {}
 
   /**
-   * Últimos 10 sueños (cualquier status), hidratados en paralelo; IA devuelve texto (no persiste).
+   * Últimos N sueños (cualquier status), hidratados en paralelo; IA devuelve texto (no persiste).
    */
   async summarizeRecent(
     locale?: string,
+    limit = 10,
   ): Promise<{ schemaVersion: 1; summary: string }> {
     const { data } = await this.dreamSessionService.findAll({
       page: 1,
-      limit: 10,
+      limit,
     });
 
     const ids = data.map((d) => String((d as { _id: unknown })._id));
