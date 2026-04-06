@@ -19,8 +19,10 @@ import { UpdateDreamSessionDto } from './dto/update-dream-session.dto';
 import {
   DreamSession,
   DreamSessionDocument,
+  DreamSessionStatus,
 } from './schemas/dream-session.schema';
 import type { HydratedDreamSessionPayload } from './dream-session-hydrated.types';
+import { maxDreamSessionStatus } from './dream-session-status.util';
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_LIMIT = 20;
@@ -29,15 +31,17 @@ const MAX_LIMIT = 100;
 function uniqValidObjectIds(ids: unknown[]): string[] {
   const set = new Set<string>();
   for (const x of ids) {
-    const s =
-      typeof x === 'string' ? x : x != null ? String(x) : null;
+    const s = typeof x === 'string' ? x : x != null ? String(x) : null;
     if (s && Types.ObjectId.isValid(s)) set.add(s);
   }
   return [...set];
 }
 
 function idStr(v: unknown): string {
-  if (v != null && typeof (v as { toString?: () => string }).toString === 'function') {
+  if (
+    v != null &&
+    typeof (v as { toString?: () => string }).toString === 'function'
+  ) {
     return String((v as { toString: () => string }).toString());
   }
   return String(v);
@@ -173,21 +177,35 @@ export class DreamSessionService {
       (entities.feelings ?? []).map((r) => r.feelingId),
     );
 
-    const [
-      charDocs,
-      locDocs,
-      objDocs,
-      ctxDocs,
-      evDocs,
-      feelDocs,
-    ] = await Promise.all([
-      this.findLeanByIds(this.characterModel, charIds, '_id name description'),
-      this.findLeanByIds(this.locationModel, locIds, '_id name description'),
-      this.findLeanByIds(this.dreamObjectModel, objIds, '_id name description'),
-      this.findLeanByIds(this.contextLifeModel, ctxIds, '_id title description'),
-      this.findLeanByIds(this.dreamEventModel, evIds, '_id label description'),
-      this.findLeanByIds(this.feelingModel, feelIds, '_id kind intensity notes'),
-    ]);
+    const [charDocs, locDocs, objDocs, ctxDocs, evDocs, feelDocs] =
+      await Promise.all([
+        this.findLeanByIds(
+          this.characterModel,
+          charIds,
+          '_id name description',
+        ),
+        this.findLeanByIds(this.locationModel, locIds, '_id name description'),
+        this.findLeanByIds(
+          this.dreamObjectModel,
+          objIds,
+          '_id name description',
+        ),
+        this.findLeanByIds(
+          this.contextLifeModel,
+          ctxIds,
+          '_id title description',
+        ),
+        this.findLeanByIds(
+          this.dreamEventModel,
+          evIds,
+          '_id label description',
+        ),
+        this.findLeanByIds(
+          this.feelingModel,
+          feelIds,
+          '_id kind intensity notes',
+        ),
+      ]);
 
     const characters = mapById(charDocs, (d) => {
       const oid = idStr(d._id);
@@ -307,12 +325,23 @@ export class DreamSessionService {
     if (!Types.ObjectId.isValid(id)) {
       throw new NotFoundException(`DreamSession ${id} not found`);
     }
+    const existing = await this.dreamSessionModel.findById(id).exec();
+    if (!existing) {
+      throw new NotFoundException(`DreamSession ${id} not found`);
+    }
     if (dto.analysis?.entities) {
       await this.validateEntities(dto.analysis.entities);
     }
     const update: Record<string, unknown> = { ...dto };
     if (dto.timestamp !== undefined) {
       update.timestamp = dto.timestamp ? new Date(dto.timestamp) : null;
+    }
+    // Ver `maxDreamSessionStatus`: no rebajar fase al editar un paso ya superado.
+    if (dto.status !== undefined) {
+      update.status = maxDreamSessionStatus(
+        existing.status as DreamSessionStatus,
+        dto.status,
+      );
     }
     const doc = await this.dreamSessionModel
       .findByIdAndUpdate(id, { $set: update }, { new: true })
@@ -353,13 +382,17 @@ export class DreamSessionService {
         .then((found) => (found ? null : `${label} ${id} not found`));
 
     for (const r of entities.characters ?? []) {
-      checks.push(assertExists(this.characterModel, r.characterId, 'Character'));
+      checks.push(
+        assertExists(this.characterModel, r.characterId, 'Character'),
+      );
     }
     for (const r of entities.locations ?? []) {
       checks.push(assertExists(this.locationModel, r.locationId, 'Location'));
     }
     for (const r of entities.objects ?? []) {
-      checks.push(assertExists(this.dreamObjectModel, r.objectId, 'DreamObject'));
+      checks.push(
+        assertExists(this.dreamObjectModel, r.objectId, 'DreamObject'),
+      );
     }
     for (const r of entities.events ?? []) {
       checks.push(assertExists(this.dreamEventModel, r.eventId, 'DreamEvent'));
