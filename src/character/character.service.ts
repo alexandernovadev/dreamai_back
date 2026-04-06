@@ -9,6 +9,7 @@ import { CreateCharacterDto } from './dto/create-character.dto';
 import { QueryCharactersDto } from './dto/query-characters.dto';
 import { UpdateCharacterDto } from './dto/update-character.dto';
 import { escapeRegex } from '../common/utils/escape-regex';
+import { DEFAULT_LIMIT, DEFAULT_PAGE, MAX_LIMIT } from '../common/constants/pagination';
 import { Character, CharacterDocument } from './schemas/character.schema';
 
 /**
@@ -22,12 +23,6 @@ import { Character, CharacterDocument } from './schemas/character.schema';
  * es la forma habitual de decirle a TypeScript “confía en este filtro”; el runtime es el
  * mismo que Mongo acepta.
  */
-/** Página por defecto si el cliente no envía `page`. */
-const DEFAULT_PAGE = 1;
-/** Tamaño de página por defecto si no envían `limit`. */
-const DEFAULT_LIMIT = 20;
-/** Tope máximo de ítems por página (evita respuestas enormes). */
-const MAX_LIMIT = 100;
 
 @Injectable()
 export class CharacterService {

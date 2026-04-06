@@ -8,9 +8,7 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { CloudinaryService, parseUploadContext } from './cloudinary.service';
-import { UPLOAD_CONTEXT } from './cloudinary-folders';
-
-const MAX_IMAGE_BYTES = 10 * 1024 * 1024;
+import { MAX_IMAGE_BYTES, UPLOAD_CONTEXT } from './cloudinary-folders';
 
 @Controller('cloudinary')
 export class CloudinaryController {

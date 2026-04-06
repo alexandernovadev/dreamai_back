@@ -28,9 +28,7 @@ import type {
   MatchedCatalogRef,
 } from './dream-elements-suggest.types';
 import { DreamSessionService } from './dream-session.service';
-
-/** Umbral mínimo de `confidence` del modelo para marcar `emphasizeNew` sin match. */
-const EMPHASIZE_NEW_MIN_CONFIDENCE = 0.85;
+import { EMPHASIZE_NEW_MIN_CONFIDENCE } from '../common/constants/ai';
 
 @Injectable()
 export class DreamElementsAiService {

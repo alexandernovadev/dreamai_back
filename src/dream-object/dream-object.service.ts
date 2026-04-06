@@ -9,14 +9,11 @@ import { CreateDreamObjectDto } from './dto/create-dream-object.dto';
 import { QueryDreamObjectsDto } from './dto/query-dream-objects.dto';
 import { UpdateDreamObjectDto } from './dto/update-dream-object.dto';
 import { escapeRegex } from '../common/utils/escape-regex';
+import { DEFAULT_LIMIT, DEFAULT_PAGE, MAX_LIMIT } from '../common/constants/pagination';
 import {
   DreamObject,
   DreamObjectDocument,
 } from './schemas/dream-object.schema';
-
-const DEFAULT_PAGE = 1;
-const DEFAULT_LIMIT = 20;
-const MAX_LIMIT = 100;
 
 @Injectable()
 export class DreamObjectService {

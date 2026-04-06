@@ -3,6 +3,8 @@
  * - Sueños: `{root}/dreams`
  * - Catálogo (futuro): `{root}/catalog/characters|locations|objects`
  */
+
+export const MAX_IMAGE_BYTES = 10 * 1024 * 1024; // 10 MB
 export const UPLOAD_CONTEXT = {
   DREAMS: 'dreams',
   CHARACTERS: 'characters',

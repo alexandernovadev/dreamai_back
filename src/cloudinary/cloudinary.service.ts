@@ -7,12 +7,11 @@ import { ConfigService } from '@nestjs/config';
 import { Readable } from 'node:stream';
 import { v2 as cloudinary } from 'cloudinary';
 import {
+  MAX_IMAGE_BYTES,
   UPLOAD_CONTEXT,
   type UploadContext,
   resolveFolderForContext,
 } from './cloudinary-folders';
-
-const MAX_IMAGE_BYTES = 10 * 1024 * 1024; // 10 MB
 
 const ALLOWED_MIME = new Set([
   'image/jpeg',

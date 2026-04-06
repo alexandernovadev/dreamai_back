@@ -9,14 +9,11 @@ import { CreateContextLifeDto } from './dto/create-context-life.dto';
 import { QueryContextLivesDto } from './dto/query-context-lives.dto';
 import { UpdateContextLifeDto } from './dto/update-context-life.dto';
 import { escapeRegex } from '../common/utils/escape-regex';
+import { DEFAULT_LIMIT, DEFAULT_PAGE, MAX_LIMIT } from '../common/constants/pagination';
 import {
   ContextLife,
   ContextLifeDocument,
 } from './schemas/context-life.schema';
-
-const DEFAULT_PAGE = 1;
-const DEFAULT_LIMIT = 20;
-const MAX_LIMIT = 100;
 
 @Injectable()
 export class ContextLifeService {

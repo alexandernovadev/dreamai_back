@@ -9,6 +9,7 @@ import { CreateLocationDto } from './dto/create-location.dto';
 import { QueryLocationsDto } from './dto/query-locations.dto';
 import { UpdateLocationDto } from './dto/update-location.dto';
 import { escapeRegex } from '../common/utils/escape-regex';
+import { DEFAULT_LIMIT, DEFAULT_PAGE, MAX_LIMIT } from '../common/constants/pagination';
 import { Location, LocationDocument } from './schemas/location.schema';
 
 /**
@@ -18,9 +19,6 @@ import { Location, LocationDocument } from './schemas/location.schema';
  * Igual que en `CharacterService`: objeto `Record<...>` + `as never` en las consultas
  * por tipos dinámicos de Mongoose/ESLint.
  */
-const DEFAULT_PAGE = 1;
-const DEFAULT_LIMIT = 20;
-const MAX_LIMIT = 100;
 
 @Injectable()
 export class LocationService {

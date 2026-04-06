@@ -12,6 +12,8 @@ import { DreamObject } from '../dream-object/schemas/dream-object.schema';
 import { Feeling } from '../feeling/schemas/feeling.schema';
 import { Location } from '../location/schemas/location.schema';
 import { escapeRegex } from '../common/utils/escape-regex';
+import { DEFAULT_LIMIT, DEFAULT_PAGE, MAX_LIMIT } from '../common/constants/pagination';
+import { MAX_DREAMS_FOR_RANGE_SUMMARY } from '../common/constants/ai';
 import { CreateDreamSessionDto } from './dto/create-dream-session.dto';
 import { DreamEntitiesInputDto } from './dto/dream-entities-input.dto';
 import { QueryDreamSessionsDto } from './dto/query-dream-sessions.dto';
@@ -24,12 +26,6 @@ import {
 import type { HydratedDreamSessionPayload } from './dream-session-hydrated.types';
 import { maxDreamSessionStatus } from './dream-session-status.util';
 
-const DEFAULT_PAGE = 1;
-const DEFAULT_LIMIT = 20;
-const MAX_LIMIT = 100;
-
-/** Máximo de sesiones enviadas a la IA en resumen por rango de fechas (coste/tokens). */
-export const MAX_DREAMS_FOR_RANGE_SUMMARY = 500;
 
 function uniqValidObjectIds(ids: unknown[]): string[] {
   const set = new Set<string>();

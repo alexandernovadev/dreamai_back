@@ -9,11 +9,8 @@ import { CreateFeelingDto } from './dto/create-feeling.dto';
 import { QueryFeelingsDto } from './dto/query-feelings.dto';
 import { UpdateFeelingDto } from './dto/update-feeling.dto';
 import { escapeRegex } from '../common/utils/escape-regex';
+import { DEFAULT_LIMIT, DEFAULT_PAGE, MAX_LIMIT } from '../common/constants/pagination';
 import { Feeling, FeelingDocument } from './schemas/feeling.schema';
-
-const DEFAULT_PAGE = 1;
-const DEFAULT_LIMIT = 20;
-const MAX_LIMIT = 100;
 
 @Injectable()
 export class FeelingService {

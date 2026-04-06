@@ -9,11 +9,8 @@ import { CreateDreamEventDto } from './dto/create-dream-event.dto';
 import { QueryDreamEventsDto } from './dto/query-dream-events.dto';
 import { UpdateDreamEventDto } from './dto/update-dream-event.dto';
 import { escapeRegex } from '../common/utils/escape-regex';
+import { DEFAULT_LIMIT, DEFAULT_PAGE, MAX_LIMIT } from '../common/constants/pagination';
 import { DreamEvent, DreamEventDocument } from './schemas/dream-event.schema';
-
-const DEFAULT_PAGE = 1;
-const DEFAULT_LIMIT = 20;
-const MAX_LIMIT = 100;
 
 @Injectable()
 export class DreamEventService {
