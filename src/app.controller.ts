@@ -11,6 +11,12 @@ export class AppController {
     return { status: 'ok' };
   }
 
+  /** Versión, build y ambiente (para la app cliente: Más → Información del sistema). */
+  @Get('meta')
+  getMeta(): AppInfo {
+    return this.appService.getAppInfo();
+  }
+
   @Get()
   getAppInfo(): AppInfo {
     return this.appService.getAppInfo();

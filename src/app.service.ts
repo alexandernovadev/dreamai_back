@@ -1,12 +1,17 @@
 import { Injectable } from '@nestjs/common';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { BUILD_ISO_DATE } from './build-info.generated';
+import { BUILD_ISO_DATE, GIT_COMMIT } from './build-info.generated';
 
 export interface AppInfo {
+  /** Nombre del servicio (para pantallas de “información del sistema”). */
+  serviceName: string;
   version: string;
-  date: string;
+  /** ISO 8601 del build (generado en `npm run build`). */
+  buildAt: string;
   environment: string;
+  /** Commit corto si hubo git al generar el build, o `GIT_COMMIT` en CI. */
+  commit: string;
 }
 
 @Injectable()
@@ -20,10 +25,13 @@ export class AppService {
   }
 
   getAppInfo(): AppInfo {
+    const fromEnv = process.env.GIT_COMMIT?.trim();
     return {
+      serviceName: 'dreamia_back',
       version: this.packageVersion,
-      date: BUILD_ISO_DATE,
+      buildAt: BUILD_ISO_DATE,
       environment: this.resolveEnvironment(),
+      commit: fromEnv || GIT_COMMIT || '',
     };
   }
 
