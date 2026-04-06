@@ -44,7 +44,7 @@ export class DreamSessionController {
     return this.dreamSessionAnalytics.getOverview();
   }
 
-  /** Últimos 6 sueños → patrones cruzados (IA). No persiste. */
+  /** Últimos 10 sueños → patrones cruzados (IA). No persiste. */
   @Post('ai/summarize-recent')
   summarizeRecent(@Body() dto: SuggestDreamElementsDto) {
     return this.dreamRecentSummarizeAi.summarizeRecent(dto.locale);
