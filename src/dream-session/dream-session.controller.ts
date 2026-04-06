@@ -45,13 +45,10 @@ export class DreamSessionController {
     return this.dreamSessionAnalytics.getOverview();
   }
 
-  /** Últimos N sueños (5–20) → patrones cruzados (IA). No persiste. */
+  /** Últimos N sueños o rango de fechas del sueño → patrones cruzados (IA). No persiste. */
   @Post('ai/summarize-recent')
   summarizeRecent(@Body() dto: SummarizeRecentDto) {
-    return this.dreamRecentSummarizeAi.summarizeRecent(
-      dto.locale,
-      dto.limit ?? 10,
-    );
+    return this.dreamRecentSummarizeAi.summarizeRecent(dto);
   }
 
   /**

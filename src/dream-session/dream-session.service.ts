@@ -28,6 +28,9 @@ const DEFAULT_PAGE = 1;
 const DEFAULT_LIMIT = 20;
 const MAX_LIMIT = 100;
 
+/** Máximo de sesiones enviadas a la IA en resumen por rango de fechas (coste/tokens). */
+export const MAX_DREAMS_FOR_RANGE_SUMMARY = 500;
+
 function uniqValidObjectIds(ids: unknown[]): string[] {
   const set = new Set<string>();
   for (const x of ids) {
@@ -119,6 +122,50 @@ export class DreamSessionService {
         totalPages,
       },
     };
+  }
+
+  /**
+   * IDs de sueños cuyo `timestamp` cae en [start, end] (inclusive), más recientes primero.
+   * `total` = coincidencias en BD; la lista devuelta está acotada a `maxDocs`.
+   */
+  async findIdsInTimestampRange(
+    start: Date,
+    end: Date,
+    maxDocs: number,
+  ): Promise<{ ids: string[]; total: number; truncated: boolean }> {
+    const filter = { timestamp: { $gte: start, $lte: end } };
+    const total = await this.dreamSessionModel.countDocuments(filter).exec();
+    const cap = Math.min(Math.max(1, maxDocs), MAX_DREAMS_FOR_RANGE_SUMMARY);
+    const docs = await this.dreamSessionModel
+      .find(filter)
+      .sort({ timestamp: -1 })
+      .limit(cap)
+      .select('_id')
+      .lean()
+      .exec();
+    const ids = docs.map((d) => idStr((d as { _id: unknown })._id));
+    const truncated = total > ids.length;
+    return { ids, total, truncated };
+  }
+
+  /**
+   * Los N sueños con `timestamp` más reciente (orden por fecha del sueño, no por `createdAt`).
+   */
+  async findRecentIdsByDreamTimestamp(
+    limit: number,
+  ): Promise<{ ids: string[]; count: number }> {
+    const cap = Math.min(Math.max(1, limit), MAX_LIMIT);
+    const docs = await this.dreamSessionModel
+      .find({
+        timestamp: { $exists: true, $ne: null },
+      })
+      .sort({ timestamp: -1 })
+      .limit(cap)
+      .select('_id')
+      .lean()
+      .exec();
+    const ids = docs.map((d) => idStr((d as { _id: unknown })._id));
+    return { ids, count: ids.length };
   }
 
   async findOne(id: string): Promise<DreamSessionDocument> {
