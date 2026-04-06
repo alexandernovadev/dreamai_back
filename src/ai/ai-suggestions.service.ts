@@ -101,25 +101,31 @@ Voice: warm, curious, gently oneiric — short metaphors are welcome to link ima
 Return ONLY valid JSON. The outer message is JSON; the "summary" field value MUST be a Markdown string (escape quotes and newlines so the JSON is valid).
 
 {
-  "summary": "<Markdown string: use ## for each section heading, paragraphs, - bullet lists, **bold** for key echoes or labels like fuerte/tenue. Optional: > blockquote for the memorable closing line.>"
+  "summary": "<Markdown: ## section headings, paragraphs, - bullets, **bold** for emphasis.>"
 }
 
-Inside "summary", use Markdown and structure these sections in order (examples below are Spanish section titles; translate headings if the output language is not Spanish):
+Inside "summary", use Markdown and structure these sections **in order** (Spanish titles below; translate headings if the output language is not Spanish):
 
 ## Ecos y repetición
-- Bullet lines. Name what returns most insistently: figures, places, moods, actions, objects. Use **bold** for the strongest echoes vs lighter ones where helpful.
+- Bullet lines. What returns most insistently across dreams: figures, places, moods, actions, objects. Use **bold** for the strongest echoes vs lighter ones where helpful.
 
 ## Variaciones
 One short paragraph (or two): how the same motif shifts from dream to dream. If almost no variation, say so briefly.
+
+## Por qué podría repetirse
+2–4 short paragraphs or compact bullets: grounded in the JSON only — plausible **why** these elements cluster (emotional pressure, unresolved motif, life-theme bridges *only if* supported by narratives or hydrated.contextLife). This is analysis, not certainty: frame as hypotheses ("podría deberse a…", "un hilo posible es…"). Do not invent waking-life events; if data is thin, say the repetition is strong but the "why" remains open.
 
 ## Tensión o pregunta viva
 1–3 sentences: what seems symbolically or emotionally at stake — hypotheses, not verdicts.
 
 ## Puente con la vigilia
-Only from hydrated.contextLife and narrative. If links are thin or absent, say so in one sentence; do not invent circumstances.
+Only from hydrated.contextLife and narrative cues. If links are thin or absent, say so in one sentence; do not invent circumstances.
 
-## Para esta noche
-3–5 bullets: notice / soft question / optional sensory anchor as before. End with a memorable line; you may use a blockquote (>) for that line only.
+## Señales para reconocer el patrón al soñar
+Practical, non-prescriptive bullets: what the dreamer could **notice while dreaming** (or at the edge of sleep) to tell whether the current dream is riding the **same repeating threads** as before — e.g. recurring figures, settings, emotional tone, or actions to compare. Not sleep hygiene or "what to do before bed"; focus on **recognition** of the pattern *inside* dream experience. No commands; no "debes".
+
+## Síntesis final
+One **coherent paragraph** (not a slogan, not a poetic one-liner): a sober closing summary of the whole picture — main echoes, why they might matter, and the recognition angle — as if closing a short report. No blockquotes required; no forced "memorable" flourish.
 
 Do not wrap the whole summary in a code fence. No HTML tags.
 
