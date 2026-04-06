@@ -5,8 +5,8 @@
 export enum FeelingKind {
   /** Asombro: pequeñez ante lo inmenso o sublime */
   AWE = 'AWE',
-  /** Embelesamiento */
-  RAPTURE = 'RAPTURE',
+  /** Pena (compasión, vergüenza ajena, pesar) */
+  PENA = 'PENA',
   BOREDOM = 'BOREDOM',
   CALM = 'CALM',
   CONFUSION = 'CONFUSION',
@@ -44,9 +44,10 @@ export const FEELING_KIND_META: Record<FeelingKind, FeelingKindMeta> = {
     labelEs: 'Asombro',
     descriptionEs: 'Sensación de pequeñez ante algo inmenso o sublime.',
   },
-  [FeelingKind.RAPTURE]: {
-    labelEs: 'Embelesamiento',
-    descriptionEs: 'Estar completamente cautivado o absorto por algo.',
+  [FeelingKind.PENA]: {
+    labelEs: 'Pena',
+    descriptionEs:
+      'Compasión, vergüenza ajena o pesar ante una situación o figura.',
   },
   [FeelingKind.BOREDOM]: {
     labelEs: 'Aburrimiento',
