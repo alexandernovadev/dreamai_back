@@ -150,17 +150,7 @@ export class AiSuggestionsService {
     text: string,
     locale?: string,
   ): Promise<SuggestDreamElementsResult> {
-    const apiKey =
-      process.env.AI_API_KEY?.trim() || process.env.OPENAI_API_KEY?.trim();
-    if (!apiKey) {
-      throw new ServiceUnavailableException(
-        'AI suggestions are not configured (set AI_API_KEY or OPENAI_API_KEY).',
-      );
-    }
-    const model = process.env.AI_MODEL?.trim() || 'deepseek-chat';
-    const baseUrl = (
-      process.env.AI_BASE_URL?.trim() || 'https://api.deepseek.com/v1'
-    ).replace(/\/$/, '');
+    const { apiKey, model, baseUrl } = this.resolveAiConfig();
 
     const userContent =
       (locale ? `Locale hint for output language: ${locale}\n\n---\n\n` : '') +
@@ -184,17 +174,7 @@ export class AiSuggestionsService {
     contextPayload: Record<string, unknown>,
     locale?: string,
   ): Promise<SuggestThoughtReadingResult> {
-    const apiKey =
-      process.env.AI_API_KEY?.trim() || process.env.OPENAI_API_KEY?.trim();
-    if (!apiKey) {
-      throw new ServiceUnavailableException(
-        'AI suggestions are not configured (set AI_API_KEY or OPENAI_API_KEY).',
-      );
-    }
-    const model = process.env.AI_MODEL?.trim() || 'deepseek-chat';
-    const baseUrl = (
-      process.env.AI_BASE_URL?.trim() || 'https://api.deepseek.com/v1'
-    ).replace(/\/$/, '');
+    const { apiKey, model, baseUrl } = this.resolveAiConfig();
 
     const userContent =
       (locale ? `Locale hint for output language: ${locale}\n\n---\n\n` : '') +
@@ -217,17 +197,7 @@ export class AiSuggestionsService {
     dreams: Record<string, unknown>[],
     locale?: string,
   ): Promise<{ summary: string }> {
-    const apiKey =
-      process.env.AI_API_KEY?.trim() || process.env.OPENAI_API_KEY?.trim();
-    if (!apiKey) {
-      throw new ServiceUnavailableException(
-        'AI suggestions are not configured (set AI_API_KEY or OPENAI_API_KEY).',
-      );
-    }
-    const model = process.env.AI_MODEL?.trim() || 'deepseek-chat';
-    const baseUrl = (
-      process.env.AI_BASE_URL?.trim() || 'https://api.deepseek.com/v1'
-    ).replace(/\/$/, '');
+    const { apiKey, model, baseUrl } = this.resolveAiConfig();
 
     const payload = { dreams };
     const userContent =
@@ -243,6 +213,21 @@ export class AiSuggestionsService {
       normalize: normalizeRecentDreamsSummary,
       temperature: 0.35,
     });
+  }
+
+  private resolveAiConfig(): { apiKey: string; model: string; baseUrl: string } {
+    const apiKey =
+      process.env.AI_API_KEY?.trim() || process.env.OPENAI_API_KEY?.trim();
+    if (!apiKey) {
+      throw new ServiceUnavailableException(
+        'AI suggestions are not configured (set AI_API_KEY or OPENAI_API_KEY).',
+      );
+    }
+    const model = process.env.AI_MODEL?.trim() || 'deepseek-chat';
+    const baseUrl = (
+      process.env.AI_BASE_URL?.trim() || 'https://api.deepseek.com/v1'
+    ).replace(/\/$/, '');
+    return { apiKey, model, baseUrl };
   }
 
   private async callOpenAiCompatible<T>(opts: {

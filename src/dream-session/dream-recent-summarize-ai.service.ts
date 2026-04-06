@@ -1,10 +1,8 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { AiSuggestionsService } from '../ai/ai-suggestions.service';
 import { buildThoughtReadingContextPayload } from './dream-thought-ai-payload';
-import {
-  DreamSessionService,
-  MAX_DREAMS_FOR_RANGE_SUMMARY,
-} from './dream-session.service';
+import { DreamSessionService } from './dream-session.service';
+import { MAX_DREAMS_FOR_RANGE_SUMMARY } from '../common/constants/ai';
 import type { SummarizeRecentDto } from './dto/summarize-recent.dto';
 import { utcInclusiveDayBounds } from './dream-date-range.util';
 

@@ -12,6 +12,7 @@ import { DreamObject } from '../dream-object/schemas/dream-object.schema';
 import { Feeling } from '../feeling/schemas/feeling.schema';
 import { Location } from '../location/schemas/location.schema';
 import { escapeRegex } from '../common/utils/escape-regex';
+import { idStr, mapById, uniqValidObjectIds } from '../common/utils/mongo';
 import { DEFAULT_LIMIT, DEFAULT_PAGE, MAX_LIMIT } from '../common/constants/pagination';
 import { MAX_DREAMS_FOR_RANGE_SUMMARY } from '../common/constants/ai';
 import { CreateDreamSessionDto } from './dto/create-dream-session.dto';
@@ -27,36 +28,6 @@ import type { HydratedDreamSessionPayload } from './dream-session-hydrated.types
 import { maxDreamSessionStatus } from './dream-session-status.util';
 
 
-function uniqValidObjectIds(ids: unknown[]): string[] {
-  const set = new Set<string>();
-  for (const x of ids) {
-    const s = typeof x === 'string' ? x : x != null ? String(x) : null;
-    if (s && Types.ObjectId.isValid(s)) set.add(s);
-  }
-  return [...set];
-}
-
-function idStr(v: unknown): string {
-  if (
-    v != null &&
-    typeof (v as { toString?: () => string }).toString === 'function'
-  ) {
-    return String((v as { toString: () => string }).toString());
-  }
-  return String(v);
-}
-
-function mapById<T>(
-  docs: Array<Record<string, unknown>>,
-  pair: (d: Record<string, unknown>) => [string, T],
-): Record<string, T> {
-  const out: Record<string, T> = {};
-  for (const d of docs) {
-    const [k, v] = pair(d);
-    out[k] = v;
-  }
-  return out;
-}
 
 @Injectable()
 export class DreamSessionService {

@@ -15,21 +15,9 @@ import type {
   DreamAnalyticsOverviewDto,
   DreamAnalyticsTopEntityDto,
 } from './dream-session-analytics.types';
+import { refToIdHex } from '../common/utils/mongo';
 
 const TOP_LIMIT = 10;
-
-function refToIdHex(v: unknown): string | null {
-  if (v == null) return null;
-  const s =
-    typeof v === 'string'
-      ? v
-      : typeof (v as { toString?: () => string }).toString === 'function'
-        ? (v as { toString: () => string }).toString()
-        : String(v);
-  const t = s.trim();
-  if (!t || !Types.ObjectId.isValid(t)) return null;
-  return new Types.ObjectId(t).toString();
-}
 
 @Injectable()
 export class DreamSessionAnalyticsService {
