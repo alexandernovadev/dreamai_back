@@ -94,6 +94,19 @@ Rules:
 - Several paragraphs; avoid bullet lists inside the string unless essential.
 - If hydrated.contextLife is empty, do not fabricate waking-life events.`;
 
+const RECENT_DREAMS_SUMMARY_PROMPT = `You analyze several recent dreams from the same person (each item in "dreams" is one dream: narrative + optional hydrated entities). Your job is cross-dream pattern spotting, not deep therapy.
+
+Return ONLY valid JSON (no markdown):
+{
+  "summary": "<one string: use line breaks; start with short bullet lines using • or - for recurring themes, symbols, places, feelings, and situations that repeat or cluster across dreams; then a short subsection titled for tonight or similar with gentle awareness ideas for approaching sleep/dreams tonight — reflective, not prescriptive>"
+}
+
+Rules:
+- Focus on what repeats or rhymes across the dreams (names, moods, settings, conflicts).
+- No clinical diagnosis, no medical advice, no "you must".
+- If a dream entry is sparse, still use what is there; do not invent events.
+- Output language: follow the locale hint when present; else match the dominant narrative language.`;
+
 @Injectable()
 export class AiSuggestionsService {
   /**
@@ -163,6 +176,39 @@ export class AiSuggestionsService {
       systemPrompt: THOUGHT_READING_PROMPT,
       normalize: normalizeSuggestThoughtReading,
       temperature: 0.45,
+    });
+  }
+
+  /** Patrones entre los últimos sueños (solo lectura; no persiste). */
+  suggestRecentDreamsSummary(
+    dreams: Record<string, unknown>[],
+    locale?: string,
+  ): Promise<{ summary: string }> {
+    const apiKey =
+      process.env.AI_API_KEY?.trim() || process.env.OPENAI_API_KEY?.trim();
+    if (!apiKey) {
+      throw new ServiceUnavailableException(
+        'AI suggestions are not configured (set AI_API_KEY or OPENAI_API_KEY).',
+      );
+    }
+    const model = process.env.AI_MODEL?.trim() || 'deepseek-chat';
+    const baseUrl = (
+      process.env.AI_BASE_URL?.trim() || 'https://api.deepseek.com/v1'
+    ).replace(/\/$/, '');
+
+    const payload = { dreams };
+    const userContent =
+      (locale ? `Locale hint for output language: ${locale}\n\n---\n\n` : '') +
+      JSON.stringify(payload);
+
+    return this.callOpenAiCompatible({
+      apiKey,
+      model,
+      baseUrl,
+      userContent,
+      systemPrompt: RECENT_DREAMS_SUMMARY_PROMPT,
+      normalize: normalizeRecentDreamsSummary,
+      temperature: 0.35,
     });
   }
 
@@ -368,4 +414,18 @@ function normalizeSuggestThoughtReading(
         ? o.text.trim()
         : '';
   return { reading: raw.slice(0, 50_000) };
+}
+
+function normalizeRecentDreamsSummary(data: unknown): { summary: string } {
+  if (!data || typeof data !== 'object') {
+    return { summary: '' };
+  }
+  const o = data as Record<string, unknown>;
+  const raw =
+    typeof o.summary === 'string'
+      ? o.summary.trim()
+      : typeof o.text === 'string'
+        ? o.text.trim()
+        : '';
+  return { summary: raw.slice(0, 100_000) };
 }

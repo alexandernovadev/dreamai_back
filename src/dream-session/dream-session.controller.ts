@@ -9,6 +9,7 @@ import {
   Query,
 } from '@nestjs/common';
 import { DreamElementsAiService } from './dream-elements-ai.service';
+import { DreamRecentSummarizeAiService } from './dream-recent-summarize-ai.service';
 import { DreamThoughtAiService } from './dream-thought-ai.service';
 import { CreateDreamSessionDto } from './dto/create-dream-session.dto';
 import { QueryDreamSessionsDto } from './dto/query-dream-sessions.dto';
@@ -24,6 +25,7 @@ export class DreamSessionController {
     private readonly dreamSessionAnalytics: DreamSessionAnalyticsService,
     private readonly dreamElementsAi: DreamElementsAiService,
     private readonly dreamThoughtAi: DreamThoughtAiService,
+    private readonly dreamRecentSummarizeAi: DreamRecentSummarizeAiService,
   ) {}
 
   @Post()
@@ -40,6 +42,12 @@ export class DreamSessionController {
   @Get('analytics/overview')
   analyticsOverview() {
     return this.dreamSessionAnalytics.getOverview();
+  }
+
+  /** Últimos 6 sueños → patrones cruzados (IA). No persiste. */
+  @Post('ai/summarize-recent')
+  summarizeRecent(@Body() dto: SuggestDreamElementsDto) {
+    return this.dreamRecentSummarizeAi.summarizeRecent(dto.locale);
   }
 
   /**

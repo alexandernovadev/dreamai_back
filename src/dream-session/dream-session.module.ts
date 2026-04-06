@@ -18,15 +18,13 @@ import {
   DreamObjectSchema,
 } from '../dream-object/schemas/dream-object.schema';
 import { Feeling, FeelingSchema } from '../feeling/schemas/feeling.schema';
-import {
-  Location,
-  LocationSchema,
-} from '../location/schemas/location.schema';
+import { Location, LocationSchema } from '../location/schemas/location.schema';
 import {
   DreamSession,
   DreamSessionSchema,
 } from './schemas/dream-session.schema';
 import { DreamElementsAiService } from './dream-elements-ai.service';
+import { DreamRecentSummarizeAiService } from './dream-recent-summarize-ai.service';
 import { DreamThoughtAiService } from './dream-thought-ai.service';
 import { DreamSessionAnalyticsService } from './dream-session-analytics.service';
 import { DreamSessionController } from './dream-session.controller';
@@ -51,6 +49,7 @@ import { DreamSessionService } from './dream-session.service';
     DreamSessionAnalyticsService,
     DreamElementsAiService,
     DreamThoughtAiService,
+    DreamRecentSummarizeAiService,
   ],
   exports: [MongooseModule],
 })
