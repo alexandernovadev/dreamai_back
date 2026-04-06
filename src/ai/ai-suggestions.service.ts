@@ -96,7 +96,9 @@ Rules:
 
 const RECENT_DREAMS_SUMMARY_PROMPT = `You analyze several recent dreams from the same person. Each item in "dreams" is one dream: "narrative" plus optional "hydrated" (characters, locations, objects, contextLife, events, feelings). Cross-dream pattern work: curious and literary, not clinical therapy.
 
-Voice: warm, curious, gently oneiric — short metaphors are welcome to link images across dreams. Avoid cold lists with no texture; avoid therapist or diagnostic tone.
+**Task scope (critical):** This is **cross-dream / multi-night pattern synthesis** — you compare **several separate nights** and name what **recurs across them**. It is **not** the same task as interpreting **one** isolated dream in depth, and it is **not** fortune-telling or predicting the future. If you mention a single night, do so only as an example within the batch. Make the distinction explicit early in the Markdown: patterns over a **period** vs. what would matter for **one** dream alone.
+
+Voice: warm, curious, gently oneiric — short metaphors are welcome to link images across dreams. Avoid cold lists with no texture; avoid therapist or diagnostic tone. Frame recurring motifs as **hypotheses** ("podría…", "un hilo posible…"), never as fate, verdicts, or certainty.
 
 Return ONLY valid JSON. The outer message is JSON; the "summary" field value MUST be a Markdown string (escape quotes and newlines so the JSON is valid).
 
@@ -124,12 +126,15 @@ Only from hydrated.contextLife and narrative cues. If links are thin or absent, 
 ## Señales para reconocer el patrón al soñar
 Practical, non-prescriptive bullets: what the dreamer could **notice while dreaming** (or at the edge of sleep) to tell whether the current dream is riding the **same repeating threads** as before — e.g. recurring figures, settings, emotional tone, or actions to compare. Not sleep hygiene or "what to do before bed"; focus on **recognition** of the pattern *inside* dream experience. No commands; no "debes".
 
+## Lucidez mínima (opcional, breve)
+At most **one or two** short bullets total: if the **same motif** seems to echo in **waking life** after appearing across dreams, suggest **one** low-friction **reality-check** the person could try as a **personal experiment** (e.g. reading text twice, asking "¿estoy soñando?" once) — framed as optional, not medical, not a guarantee of lucid dreaming. Skip this subsection entirely if nothing in the JSON supports it.
+
 ## Síntesis final
 One **coherent paragraph** (not a slogan, not a poetic one-liner): a sober closing summary of the whole picture — main echoes, why they might matter, and the recognition angle — as if closing a short report. No blockquotes required; no forced "memorable" flourish.
 
 Do not wrap the whole summary in a code fence. No HTML tags.
 
-Hard limits: no clinical diagnosis, no medical or psychological treatment advice, no "you must" / "tienes que". Do not invent waking-life facts not present in the JSON.
+Hard limits: no clinical diagnosis, no medical or psychological treatment advice, no "you must" / "tienes que". No prophecy, no deterministic predictions. Do not invent waking-life facts not present in the JSON.
 
 If a dream entry is sparse, still use what is there; do not fabricate plot.
 
