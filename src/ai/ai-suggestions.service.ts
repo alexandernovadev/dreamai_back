@@ -94,18 +94,32 @@ Rules:
 - Several paragraphs; avoid bullet lists inside the string unless essential.
 - If hydrated.contextLife is empty, do not fabricate waking-life events.`;
 
-const RECENT_DREAMS_SUMMARY_PROMPT = `You analyze several recent dreams from the same person (each item in "dreams" is one dream: narrative + optional hydrated entities). Your job is cross-dream pattern spotting, not deep therapy.
+const RECENT_DREAMS_SUMMARY_PROMPT = `You analyze several recent dreams from the same person. Each item in "dreams" is one dream: "narrative" plus optional "hydrated" (characters, locations, objects, contextLife, events, feelings). Cross-dream pattern work: curious and literary, not clinical therapy.
+
+Voice: warm, curious, gently oneiric — short metaphors are welcome to link images across dreams. Avoid cold lists with no texture; avoid therapist or diagnostic tone.
 
 Return ONLY valid JSON (no markdown):
 {
-  "summary": "<one string: use line breaks; start with short bullet lines using • or - for recurring themes, symbols, places, feelings, and situations that repeat or cluster across dreams; then a short subsection titled for tonight or similar with gentle awareness ideas for approaching sleep/dreams tonight — reflective, not prescriptive>"
+  "summary": "<one multi-section string with line breaks. Use clear section headings in the OUTPUT language (e.g. in Spanish if locale says es).>"
 }
 
-Rules:
-- Focus on what repeats or rhymes across the dreams (names, moods, settings, conflicts).
-- No clinical diagnosis, no medical advice, no "you must".
-- If a dream entry is sparse, still use what is there; do not invent events.
-- Output language: follow the locale hint when present; else match the dominant narrative language.`;
+Inside "summary", structure the text with these sections in order (use blank lines between sections). Section titles must be plain text in the output language (examples below are Spanish; translate titles if the output language is not Spanish):
+
+1) Ecos y repetición — Bullet lines (• or -). Name what returns most insistently across dreams: figures, places, moods, actions, objects. Mark stronger vs lighter echoes (e.g. fuerte / tenue or equivalent in the output language).
+
+2) Variaciones — A short paragraph: how the same motif shifts from dream to dream (tone, outcome, or feeling). If there is almost no variation, say so briefly.
+
+3) Tensión o pregunta viva — 1–3 sentences: what seems symbolically or emotionally at stake or unresolved — hypotheses, not verdicts.
+
+4) Puente con la vigilia — Only use hydrated.contextLife and narrative cues. If waking-life links are thin or absent, say that honestly in one sentence and do not invent circumstances.
+
+5) Para esta noche — A subsection with 3–5 bullet lines, each with a different angle: something to notice if it appears again; a soft question to hold (not a command); optionally one sensory anchor (light, sound, movement, texture) borrowed from recent dreams as an invitation to attention, not a mandatory exercise. Then end with one memorable closing line (a gentle refrain or image), on its own line. No markdown in the summary string (no asterisks, no code fences).
+
+Hard limits: no clinical diagnosis, no medical or psychological treatment advice, no "you must" / "tienes que". Do not invent waking-life facts not present in the JSON.
+
+If a dream entry is sparse, still use what is there; do not fabricate plot.
+
+Output language: follow the locale hint when present; otherwise match the dominant narrative language. Section headings must be in that same language.`;
 
 @Injectable()
 export class AiSuggestionsService {
