@@ -5,5 +5,4 @@
  */
 export const DREAM_PERSPECTIVE_VALUES = ['ACTOR', 'OBSERVER'] as const;
 
-export type DreamPerspectiveValue =
-  (typeof DREAM_PERSPECTIVE_VALUES)[number];
+export type DreamPerspectiveValue = (typeof DREAM_PERSPECTIVE_VALUES)[number];

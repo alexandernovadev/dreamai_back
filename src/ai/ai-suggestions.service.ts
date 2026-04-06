@@ -215,7 +215,11 @@ export class AiSuggestionsService {
     });
   }
 
-  private resolveAiConfig(): { apiKey: string; model: string; baseUrl: string } {
+  private resolveAiConfig(): {
+    apiKey: string;
+    model: string;
+    baseUrl: string;
+  } {
     const apiKey =
       process.env.AI_API_KEY?.trim() || process.env.OPENAI_API_KEY?.trim();
     if (!apiKey) {

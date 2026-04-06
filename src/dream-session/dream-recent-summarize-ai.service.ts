@@ -136,7 +136,10 @@ export class DreamRecentSummarizeAiService {
     start: Date;
     end: Date;
   } {
-    if ((dto.timestampStart && !dto.timestampEnd) || (!dto.timestampStart && dto.timestampEnd)) {
+    if (
+      (dto.timestampStart && !dto.timestampEnd) ||
+      (!dto.timestampStart && dto.timestampEnd)
+    ) {
       throw new BadRequestException(
         'timestampStart y timestampEnd deben enviarse juntos.',
       );

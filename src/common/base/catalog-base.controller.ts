@@ -33,7 +33,6 @@ export abstract class CatalogBaseController<
   protected abstract readonly service: TService;
 
   @Post()
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   create(@Body() dto: TCreateDto): any {
     return (this.service as any).create(dto);
   }
@@ -49,8 +48,10 @@ export abstract class CatalogBaseController<
   }
 
   @Patch(':id')
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  update(@Param('id', ParseObjectIdPipe) id: string, @Body() dto: TUpdateDto): any {
+  update(
+    @Param('id', ParseObjectIdPipe) id: string,
+    @Body() dto: TUpdateDto,
+  ): any {
     return (this.service as any).update(id, dto);
   }
 

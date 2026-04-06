@@ -26,12 +26,14 @@ export function buildThoughtReadingContextPayload(
       : undefined;
 
   const dreamKind = Array.isArray(s.dreamKind)
-    ? (s.dreamKind as unknown[]).filter((x): x is string => typeof x === 'string')
+    ? (s.dreamKind as unknown[]).filter(
+        (x): x is string => typeof x === 'string',
+      )
     : [];
 
   const analysis = s.analysis as Record<string, unknown> | undefined;
   const perspectives = Array.isArray(analysis?.perspectives)
-    ? (analysis!.perspectives as unknown[]).filter(
+    ? (analysis.perspectives as unknown[]).filter(
         (x): x is string => typeof x === 'string',
       )
     : [];

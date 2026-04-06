@@ -13,7 +13,11 @@ import { Feeling } from '../feeling/schemas/feeling.schema';
 import { Location } from '../location/schemas/location.schema';
 import { escapeRegex } from '../common/utils/escape-regex';
 import { idStr, mapById, uniqValidObjectIds } from '../common/utils/mongo';
-import { DEFAULT_LIMIT, DEFAULT_PAGE, MAX_LIMIT } from '../common/constants/pagination';
+import {
+  DEFAULT_LIMIT,
+  DEFAULT_PAGE,
+  MAX_LIMIT,
+} from '../common/constants/pagination';
 import { MAX_DREAMS_FOR_RANGE_SUMMARY } from '../common/constants/ai';
 import { CreateDreamSessionDto } from './dto/create-dream-session.dto';
 import { DreamEntitiesInputDto } from './dto/dream-entities-input.dto';
@@ -26,8 +30,6 @@ import {
 } from './schemas/dream-session.schema';
 import type { HydratedDreamSessionPayload } from './dream-session-hydrated.types';
 import { maxDreamSessionStatus } from './dream-session-status.util';
-
-
 
 @Injectable()
 export class DreamSessionService {
@@ -352,10 +354,7 @@ export class DreamSessionService {
     }
     // Ver `maxDreamSessionStatus`: no rebajar fase al editar un paso ya superado.
     if (dto.status !== undefined) {
-      update.status = maxDreamSessionStatus(
-        existing.status as DreamSessionStatus,
-        dto.status,
-      );
+      update.status = maxDreamSessionStatus(existing.status, dto.status);
     }
     const doc = await this.dreamSessionModel
       .findByIdAndUpdate(id, { $set: update }, { new: true })

@@ -1,7 +1,4 @@
-import {
-  BadRequestException,
-  Injectable,
-} from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { AiSuggestionsService } from '../ai/ai-suggestions.service';
@@ -117,7 +114,9 @@ export class DreamElementsAiService {
     return confidence >= EMPHASIZE_NEW_MIN_CONFIDENCE;
   }
 
-  private async matchCharacter(name: string): Promise<MatchedCatalogRef | null> {
+  private async matchCharacter(
+    name: string,
+  ): Promise<MatchedCatalogRef | null> {
     const doc = await this.findOneByExactField(
       this.characterModel,
       'name',

@@ -1,7 +1,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
-import { DreamSession, DreamSessionDocument } from '../dream-session/schemas/dream-session.schema';
+import {
+  DreamSession,
+  DreamSessionDocument,
+} from '../dream-session/schemas/dream-session.schema';
 import { CatalogBaseService } from '../common/base/catalog-base.service';
 import { CreateFeelingDto } from './dto/create-feeling.dto';
 import { QueryFeelingsDto } from './dto/query-feelings.dto';
@@ -15,7 +18,8 @@ export class FeelingService extends CatalogBaseService {
 
   constructor(
     @InjectModel(Feeling.name) protected readonly model: Model<FeelingDocument>,
-    @InjectModel(DreamSession.name) protected readonly sessionModel: Model<DreamSessionDocument>,
+    @InjectModel(DreamSession.name)
+    protected readonly sessionModel: Model<DreamSessionDocument>,
   ) {
     super();
   }
@@ -34,7 +38,8 @@ export class FeelingService extends CatalogBaseService {
     if (dto.kind !== undefined) update.kind = dto.kind;
     if (dto.intensity !== undefined) update.intensity = dto.intensity;
     if (dto.notes !== undefined) update.notes = dto.notes;
-    if (dto.dreamSessionId !== undefined) update.dreamSessionId = new Types.ObjectId(dto.dreamSessionId);
+    if (dto.dreamSessionId !== undefined)
+      update.dreamSessionId = new Types.ObjectId(dto.dreamSessionId);
     const doc = await this.model
       .findByIdAndUpdate(id, update, { new: true, runValidators: true })
       .exec();
@@ -55,8 +60,18 @@ export class FeelingService extends CatalogBaseService {
       if (query.intensityMax !== undefined) range.$lte = query.intensityMax;
       filter.intensity = range;
     }
-    this.applyDateRange(filter, 'createdAt', query.createdFrom, query.createdTo);
-    this.applyDateRange(filter, 'updatedAt', query.updatedFrom, query.updatedTo);
+    this.applyDateRange(
+      filter,
+      'createdAt',
+      query.createdFrom,
+      query.createdTo,
+    );
+    this.applyDateRange(
+      filter,
+      'updatedAt',
+      query.updatedFrom,
+      query.updatedTo,
+    );
     return filter;
   }
 }

@@ -10,18 +10,12 @@ export type HydratedDreamSessionPayload = {
       string,
       { id: string; name: string; description?: string }
     >;
-    objects: Record<
-      string,
-      { id: string; name: string; description?: string }
-    >;
+    objects: Record<string, { id: string; name: string; description?: string }>;
     contextLife: Record<
       string,
       { id: string; title: string; description?: string }
     >;
-    events: Record<
-      string,
-      { id: string; label: string; description?: string }
-    >;
+    events: Record<string, { id: string; label: string; description?: string }>;
     feelings: Record<
       string,
       { id: string; kind: string; intensity?: number; notes?: string }

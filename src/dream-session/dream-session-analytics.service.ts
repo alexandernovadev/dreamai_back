@@ -65,22 +65,18 @@ export class DreamSessionAnalyticsService {
     };
   }
 
-  private async catalogTotals(): Promise<DreamAnalyticsOverviewDto['catalogTotals']> {
-    const [
-      characters,
-      locations,
-      objects,
-      events,
-      contextLife,
-      feelings,
-    ] = await Promise.all([
-      this.characterModel.countDocuments().exec(),
-      this.locationModel.countDocuments().exec(),
-      this.dreamObjectModel.countDocuments().exec(),
-      this.dreamEventModel.countDocuments().exec(),
-      this.contextLifeModel.countDocuments().exec(),
-      this.feelingModel.countDocuments().exec(),
-    ]);
+  private async catalogTotals(): Promise<
+    DreamAnalyticsOverviewDto['catalogTotals']
+  > {
+    const [characters, locations, objects, events, contextLife, feelings] =
+      await Promise.all([
+        this.characterModel.countDocuments().exec(),
+        this.locationModel.countDocuments().exec(),
+        this.dreamObjectModel.countDocuments().exec(),
+        this.dreamEventModel.countDocuments().exec(),
+        this.contextLifeModel.countDocuments().exec(),
+        this.feelingModel.countDocuments().exec(),
+      ]);
 
     return {
       characters,
@@ -150,11 +146,7 @@ export class DreamSessionAnalyticsService {
       ])
       .exec();
 
-    return this.attachNames(
-      rows,
-      this.characterModel,
-      'name',
-    );
+    return this.attachNames(rows, this.characterModel, 'name');
   }
 
   private async topLocations(): Promise<DreamAnalyticsTopEntityDto[]> {

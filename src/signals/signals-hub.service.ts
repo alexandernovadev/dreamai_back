@@ -1,9 +1,18 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
-import { Character, CharacterDocument } from '../character/schemas/character.schema';
-import { ContextLife, ContextLifeDocument } from '../context-life/schemas/context-life.schema';
-import { DreamEvent, DreamEventDocument } from '../dream-event/schemas/dream-event.schema';
+import {
+  Character,
+  CharacterDocument,
+} from '../character/schemas/character.schema';
+import {
+  ContextLife,
+  ContextLifeDocument,
+} from '../context-life/schemas/context-life.schema';
+import {
+  DreamEvent,
+  DreamEventDocument,
+} from '../dream-event/schemas/dream-event.schema';
 import {
   DreamSession,
   DreamSessionDocument,
@@ -13,7 +22,10 @@ import {
   DreamObjectDocument,
 } from '../dream-object/schemas/dream-object.schema';
 import { Feeling, FeelingDocument } from '../feeling/schemas/feeling.schema';
-import { Location, LocationDocument } from '../location/schemas/location.schema';
+import {
+  Location,
+  LocationDocument,
+} from '../location/schemas/location.schema';
 
 const HUB_LIMIT = 5;
 const CATALOG_MAX_LIMIT = 100;
@@ -100,12 +112,33 @@ export class SignalsHubService {
 
     const [characters, locations, objects, events, lifeContext, feelings] =
       await Promise.all([
-        this.buildHubItems(this.characterModel, 'characters', (r) => String(r.name), withImage),
-        this.buildHubItems(this.locationModel, 'locations', (r) => String(r.name), withImage),
-        this.buildHubItems(this.dreamObjectModel, 'objects', (r) => String(r.name), withImage),
-        this.buildHubItems(this.dreamEventModel, 'events', (r) => String(r.label)),
-        this.buildHubItems(this.contextLifeModel, 'contextLife', (r) => String(r.title)),
-        this.buildHubItems(this.feelingModel, 'feelings', (r) => feelingTitleEn(String(r.kind))),
+        this.buildHubItems(
+          this.characterModel,
+          'characters',
+          (r) => String(r.name),
+          withImage,
+        ),
+        this.buildHubItems(
+          this.locationModel,
+          'locations',
+          (r) => String(r.name),
+          withImage,
+        ),
+        this.buildHubItems(
+          this.dreamObjectModel,
+          'objects',
+          (r) => String(r.name),
+          withImage,
+        ),
+        this.buildHubItems(this.dreamEventModel, 'events', (r) =>
+          String(r.label),
+        ),
+        this.buildHubItems(this.contextLifeModel, 'contextLife', (r) =>
+          String(r.title),
+        ),
+        this.buildHubItems(this.feelingModel, 'feelings', (r) =>
+          feelingTitleEn(String(r.kind)),
+        ),
       ]);
 
     return { characters, locations, objects, events, lifeContext, feelings };
@@ -120,13 +153,19 @@ export class SignalsHubService {
     limitRaw: number,
   ): Promise<SignalsCatalogPageDto> {
     const allowed = new Set([
-      'characters', 'locations', 'objects', 'events', 'life-context', 'feelings',
+      'characters',
+      'locations',
+      'objects',
+      'events',
+      'life-context',
+      'feelings',
     ]);
     if (!allowed.has(entity)) {
       throw new BadRequestException(`Unknown catalog entity: ${entity}`);
     }
 
-    const page = Number.isFinite(pageRaw) && pageRaw >= 1 ? Math.floor(pageRaw) : 1;
+    const page =
+      Number.isFinite(pageRaw) && pageRaw >= 1 ? Math.floor(pageRaw) : 1;
     const limit = Math.min(
       CATALOG_MAX_LIMIT,
       Math.max(
@@ -141,17 +180,62 @@ export class SignalsHubService {
 
     switch (entity) {
       case 'characters':
-        return this.buildCatalogPage(this.characterModel, 'characters', skip, limit, page, (r) => String(r.name), withImage);
+        return this.buildCatalogPage(
+          this.characterModel,
+          'characters',
+          skip,
+          limit,
+          page,
+          (r) => String(r.name),
+          withImage,
+        );
       case 'locations':
-        return this.buildCatalogPage(this.locationModel, 'locations', skip, limit, page, (r) => String(r.name), withImage);
+        return this.buildCatalogPage(
+          this.locationModel,
+          'locations',
+          skip,
+          limit,
+          page,
+          (r) => String(r.name),
+          withImage,
+        );
       case 'objects':
-        return this.buildCatalogPage(this.dreamObjectModel, 'objects', skip, limit, page, (r) => String(r.name), withImage);
+        return this.buildCatalogPage(
+          this.dreamObjectModel,
+          'objects',
+          skip,
+          limit,
+          page,
+          (r) => String(r.name),
+          withImage,
+        );
       case 'events':
-        return this.buildCatalogPage(this.dreamEventModel, 'events', skip, limit, page, (r) => String(r.label));
+        return this.buildCatalogPage(
+          this.dreamEventModel,
+          'events',
+          skip,
+          limit,
+          page,
+          (r) => String(r.label),
+        );
       case 'life-context':
-        return this.buildCatalogPage(this.contextLifeModel, 'contextLife', skip, limit, page, (r) => String(r.title));
+        return this.buildCatalogPage(
+          this.contextLifeModel,
+          'contextLife',
+          skip,
+          limit,
+          page,
+          (r) => String(r.title),
+        );
       case 'feelings':
-        return this.buildCatalogPage(this.feelingModel, 'feelings', skip, limit, page, (r) => feelingTitleEn(String(r.kind)));
+        return this.buildCatalogPage(
+          this.feelingModel,
+          'feelings',
+          skip,
+          limit,
+          page,
+          (r) => feelingTitleEn(String(r.kind)),
+        );
       default:
         throw new BadRequestException(`Unknown catalog entity: ${entity}`);
     }
@@ -161,7 +245,6 @@ export class SignalsHubService {
   // Generic helpers — replace 12 near-identical private methods
   // ---------------------------------------------------------------------------
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private async buildHubItems(
     model: Model<any>,
     key: EntityPathKey,
@@ -187,7 +270,6 @@ export class SignalsHubService {
     });
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private async buildCatalogPage(
     model: Model<any>,
     key: EntityPathKey,
@@ -198,12 +280,18 @@ export class SignalsHubService {
     getImageUri?: ImageUriFn,
   ): Promise<SignalsCatalogPageDto> {
     const [rows, total] = await Promise.all([
-      model.find().sort({ updatedAt: -1 }).skip(skip).limit(limit).lean().exec() as Promise<LeanRow[]>,
-      model.countDocuments({}).exec() as Promise<number>,
+      model
+        .find()
+        .sort({ updatedAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean()
+        .exec() as Promise<LeanRow[]>,
+      model.countDocuments({}).exec(),
     ]);
-    const ids = (rows as LeanRow[]).map((r) => r._id as Types.ObjectId);
+    const ids = rows.map((r) => r._id as Types.ObjectId);
     const counts = await this.appearanceCounts(key, ids);
-    const data = (rows as LeanRow[]).map((r) => {
+    const data = rows.map((r) => {
       const id = (r._id as Types.ObjectId).toString();
       return {
         id,
@@ -238,7 +326,11 @@ export class SignalsHubService {
     return new Map(entries);
   }
 
-  private pageMeta(total: number, page: number, limit: number): SignalsCatalogPageMeta {
+  private pageMeta(
+    total: number,
+    page: number,
+    limit: number,
+  ): SignalsCatalogPageMeta {
     const totalPages = total === 0 ? 0 : Math.ceil(total / limit);
     return { page, limit, total, totalPages };
   }

@@ -1,7 +1,11 @@
 import { NotFoundException } from '@nestjs/common';
 import { Model, Types } from 'mongoose';
 import { DreamSessionDocument } from '../../dream-session/schemas/dream-session.schema';
-import { DEFAULT_LIMIT, DEFAULT_PAGE, MAX_LIMIT } from '../constants/pagination';
+import {
+  DEFAULT_LIMIT,
+  DEFAULT_PAGE,
+  MAX_LIMIT,
+} from '../constants/pagination';
 import { escapeRegex } from '../utils/escape-regex';
 
 /**
@@ -14,7 +18,6 @@ import { escapeRegex } from '../utils/escape-regex';
  * that don't satisfy the strict generic signature — `as never` is the standard workaround.
  */
 export abstract class CatalogBaseService {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   protected abstract readonly model: Model<any>;
   protected abstract readonly sessionModel: Model<DreamSessionDocument>;
   /** Used in NotFoundException messages, e.g. "Character". */
@@ -22,10 +25,8 @@ export abstract class CatalogBaseService {
   /** MongoDB path inside dream_sessions, e.g. "analysis.entities.characters.characterId". */
   protected abstract readonly dreamIdPath: string;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   protected abstract buildFilter(query: any): Record<string, unknown>;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async findAll(query: any) {
     const page = (query.page as number | undefined) ?? DEFAULT_PAGE;
     const rawLimit = (query.limit as number | undefined) ?? DEFAULT_LIMIT;
@@ -34,7 +35,13 @@ export abstract class CatalogBaseService {
     const skip = (page - 1) * limit;
 
     const [data, total] = await Promise.all([
-      this.model.find(filter as never).sort({ updatedAt: -1 }).skip(skip).limit(limit).lean().exec(),
+      this.model
+        .find(filter as never)
+        .sort({ updatedAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean()
+        .exec(),
       this.model.countDocuments(filter as never).exec(),
     ]);
 
@@ -48,7 +55,10 @@ export abstract class CatalogBaseService {
 
     const oid = new Types.ObjectId(id);
     const dreamFilter = {
-      $or: [{ [this.dreamIdPath]: oid }, { [this.dreamIdPath]: oid.toString() }],
+      $or: [
+        { [this.dreamIdPath]: oid },
+        { [this.dreamIdPath]: oid.toString() },
+      ],
     };
 
     const [dreams, count] = await Promise.all([
@@ -65,7 +75,10 @@ export abstract class CatalogBaseService {
       ...doc.toObject(),
       dreamAppearances: {
         count,
-        dreams: dreams.map((d) => ({ _id: d._id.toString(), timestamp: d.timestamp ?? null })),
+        dreams: dreams.map((d) => ({
+          _id: d._id.toString(),
+          timestamp: d.timestamp ?? null,
+        })),
       },
     };
   }
@@ -94,18 +107,29 @@ export abstract class CatalogBaseService {
   }
 
   /** Case-insensitive partial match on a text field. */
-  protected applyTextField(filter: Record<string, unknown>, field: string, value?: string): void {
+  protected applyTextField(
+    filter: Record<string, unknown>,
+    field: string,
+    value?: string,
+  ): void {
     if (value?.trim()) {
       filter[field] = { $regex: escapeRegex(value.trim()), $options: 'i' };
     }
   }
 
   /** Filters by presence/absence of a non-empty `imageUri` field. */
-  protected applyImageFilter(filter: Record<string, unknown>, hasImage?: boolean): void {
+  protected applyImageFilter(
+    filter: Record<string, unknown>,
+    hasImage?: boolean,
+  ): void {
     if (hasImage === true) {
       filter.imageUri = { $exists: true, $nin: [null, ''] };
     } else if (hasImage === false) {
-      filter.$or = [{ imageUri: { $exists: false } }, { imageUri: null }, { imageUri: '' }];
+      filter.$or = [
+        { imageUri: { $exists: false } },
+        { imageUri: null },
+        { imageUri: '' },
+      ];
     }
   }
 

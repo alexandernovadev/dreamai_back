@@ -1,7 +1,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
-import { DreamSession, DreamSessionDocument } from '../dream-session/schemas/dream-session.schema';
+import {
+  DreamSession,
+  DreamSessionDocument,
+} from '../dream-session/schemas/dream-session.schema';
 import { CatalogBaseService } from '../common/base/catalog-base.service';
 import { CreateDreamEventDto } from './dto/create-dream-event.dto';
 import { QueryDreamEventsDto } from './dto/query-dream-events.dto';
@@ -14,8 +17,10 @@ export class DreamEventService extends CatalogBaseService {
   protected readonly dreamIdPath = 'analysis.entities.events.eventId';
 
   constructor(
-    @InjectModel(DreamEvent.name) protected readonly model: Model<DreamEventDocument>,
-    @InjectModel(DreamSession.name) protected readonly sessionModel: Model<DreamSessionDocument>,
+    @InjectModel(DreamEvent.name)
+    protected readonly model: Model<DreamEventDocument>,
+    @InjectModel(DreamSession.name)
+    protected readonly sessionModel: Model<DreamSessionDocument>,
   ) {
     super();
   }
@@ -28,11 +33,15 @@ export class DreamEventService extends CatalogBaseService {
     }).save();
   }
 
-  async update(id: string, dto: UpdateDreamEventDto): Promise<DreamEventDocument> {
+  async update(
+    id: string,
+    dto: UpdateDreamEventDto,
+  ): Promise<DreamEventDocument> {
     const update: Record<string, unknown> = {};
     if (dto.label !== undefined) update.label = dto.label;
     if (dto.description !== undefined) update.description = dto.description;
-    if (dto.dreamSessionId !== undefined) update.dreamSessionId = new Types.ObjectId(dto.dreamSessionId);
+    if (dto.dreamSessionId !== undefined)
+      update.dreamSessionId = new Types.ObjectId(dto.dreamSessionId);
     const doc = await this.model
       .findByIdAndUpdate(id, update, { new: true, runValidators: true })
       .exec();
@@ -47,8 +56,18 @@ export class DreamEventService extends CatalogBaseService {
     if (query.dreamSessionId?.trim()) {
       filter.dreamSessionId = new Types.ObjectId(query.dreamSessionId);
     }
-    this.applyDateRange(filter, 'createdAt', query.createdFrom, query.createdTo);
-    this.applyDateRange(filter, 'updatedAt', query.updatedFrom, query.updatedTo);
+    this.applyDateRange(
+      filter,
+      'createdAt',
+      query.createdFrom,
+      query.createdTo,
+    );
+    this.applyDateRange(
+      filter,
+      'updatedAt',
+      query.updatedFrom,
+      query.updatedTo,
+    );
     return filter;
   }
 }
