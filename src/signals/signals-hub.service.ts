@@ -2,6 +2,10 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import {
+  DEFAULT_LIMIT,
+  MAX_LIMIT,
+} from '../common/constants/pagination';
+import {
   Character,
   CharacterDocument,
 } from '../character/schemas/character.schema';
@@ -28,8 +32,6 @@ import {
 } from '../location/schemas/location.schema';
 
 const HUB_LIMIT = 5;
-const CATALOG_MAX_LIMIT = 100;
-const CATALOG_DEFAULT_LIMIT = 20;
 
 /** Unified card row for the Signals hub (English UI titles). */
 export type SignalsHubItemDto = {
@@ -167,12 +169,12 @@ export class SignalsHubService {
     const page =
       Number.isFinite(pageRaw) && pageRaw >= 1 ? Math.floor(pageRaw) : 1;
     const limit = Math.min(
-      CATALOG_MAX_LIMIT,
+      MAX_LIMIT,
       Math.max(
         1,
         Number.isFinite(limitRaw) && limitRaw >= 1
           ? Math.floor(limitRaw)
-          : CATALOG_DEFAULT_LIMIT,
+          : DEFAULT_LIMIT,
       ),
     );
     const skip = (page - 1) * limit;

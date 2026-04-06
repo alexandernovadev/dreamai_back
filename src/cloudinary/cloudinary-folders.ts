@@ -15,8 +15,6 @@ export const UPLOAD_CONTEXT = {
 export type UploadContext =
   (typeof UPLOAD_CONTEXT)[keyof typeof UPLOAD_CONTEXT];
 
-export const UPLOAD_CONTEXT_VALUES = Object.values(UPLOAD_CONTEXT);
-
 export function resolveFolderForContext(
   rootPrefix: string,
   context: UploadContext,
