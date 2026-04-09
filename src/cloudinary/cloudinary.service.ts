@@ -12,6 +12,7 @@ import {
   type UploadContext,
   resolveFolderForContext,
 } from './cloudinary-folders';
+import { optimizeImageBuffer } from './image-optimize.util';
 
 const ALLOWED_MIME = new Set([
   'image/jpeg',
@@ -83,6 +84,9 @@ export class CloudinaryService {
     }
 
     this.configureSdk();
+
+    const { buffer: optimized } = await optimizeImageBuffer(buffer, mimetype);
+
     const rootPrefix =
       this.config.get<string>('CLOUDINARY_ROOT_PREFIX')?.trim() || 'dreamia';
     const folder = resolveFolderForContext(rootPrefix, context);
@@ -92,6 +96,7 @@ export class CloudinaryService {
         {
           folder,
           resource_type: 'image',
+          format: 'webp',
         },
         (error, res) => {
           if (error) {
@@ -108,7 +113,7 @@ export class CloudinaryService {
           });
         },
       );
-      Readable.from(buffer).pipe(stream);
+      Readable.from(optimized).pipe(stream);
     });
 
     return result;
