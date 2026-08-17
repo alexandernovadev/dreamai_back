@@ -1,0 +1,21 @@
+meta {
+  name: Catalog Page
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/signals/catalog/characters?page=1&limit=20
+  body: none
+  auth: none
+}
+
+params:query {
+  page: 1
+  limit: 20
+}
+
+docs {
+  Paginated "see all" for one catalog type. Replace `characters` in the path with:
+  characters | locations | dream-objects | dream-events | context-life | feelings
+}

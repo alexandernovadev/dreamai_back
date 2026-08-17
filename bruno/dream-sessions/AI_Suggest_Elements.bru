@@ -1,0 +1,22 @@
+meta {
+  name: AI - Suggest Elements
+  type: http
+  seq: 9
+}
+
+post {
+  url: {{baseUrl}}/dream-sessions/{{dreamSessionId}}/ai/suggest-elements
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "locale": "es"
+  }
+}
+
+docs {
+  Suggests characters/locations/objects/etc. from `rawNarrative`, matched against the catalog.
+  Does not persist and does not clear existing `analysis.entities`.
+}

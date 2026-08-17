@@ -1,0 +1,16 @@
+meta {
+  name: List Context Lives
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/context-life
+  body: none
+  auth: none
+}
+
+docs {
+  Optional query params: page, limit, title, titleExact, description,
+  createdFrom, createdTo, updatedFrom, updatedTo
+}

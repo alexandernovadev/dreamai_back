@@ -1,0 +1,31 @@
+meta {
+  name: Create Feeling
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/feelings
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "kind": "AWE",
+    "intensity": 7,
+    "notes": "Felt overwhelmed by the vastness of the dream landscape.",
+    "dreamSessionId": "{{dreamSessionId}}"
+  }
+}
+
+script:post-response {
+  if (res.body && res.body._id) {
+    bru.setEnvVar("feelingId", res.body._id);
+  }
+}
+
+docs {
+  Requires an existing dreamSessionId (run "Create Dream Session" first).
+  See "List Feeling Kinds" for the full list of valid `kind` values.
+}

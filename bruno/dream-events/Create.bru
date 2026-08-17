@@ -1,0 +1,29 @@
+meta {
+  name: Create Dream Event
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/dream-events
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "label": "Falling",
+    "description": "I was falling from a great height but never landed.",
+    "dreamSessionId": "{{dreamSessionId}}"
+  }
+}
+
+script:post-response {
+  if (res.body && res.body._id) {
+    bru.setEnvVar("dreamEventId", res.body._id);
+  }
+}
+
+docs {
+  Requires an existing dreamSessionId (run "Create Dream Session" first).
+}

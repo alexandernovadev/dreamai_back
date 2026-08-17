@@ -1,0 +1,15 @@
+meta {
+  name: Signals Hub
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/signals/hub
+  body: none
+  auth: none
+}
+
+docs {
+  Aggregated hub: 5 rows per catalog + appearance counts (no N+1).
+}

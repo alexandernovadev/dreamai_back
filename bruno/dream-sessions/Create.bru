@@ -1,0 +1,31 @@
+meta {
+  name: Create Dream Session
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/dream-sessions
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "timestamp": "2026-08-17T06:30:00.000Z",
+    "status": "DRAFT",
+    "rawNarrative": "I was walking through a house that kept changing shape.",
+    "dreamKind": ["recurring"],
+    "dreamImages": []
+  }
+}
+
+script:post-response {
+  if (res.body && res.body._id) {
+    bru.setEnvVar("dreamSessionId", res.body._id);
+  }
+}
+
+docs {
+  status: DRAFT | ELEMENTS | STRUCTURED | THOUGHT
+}

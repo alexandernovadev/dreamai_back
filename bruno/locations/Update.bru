@@ -1,0 +1,17 @@
+meta {
+  name: Update Location
+  type: http
+  seq: 4
+}
+
+patch {
+  url: {{baseUrl}}/locations/{{locationId}}
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "description": "Updated description."
+  }
+}

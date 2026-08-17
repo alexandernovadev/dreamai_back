@@ -1,0 +1,24 @@
+meta {
+  name: AI - Summarize Recent
+  type: http
+  seq: 8
+}
+
+post {
+  url: {{baseUrl}}/dream-sessions/ai/summarize-recent
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "limit": 10,
+    "locale": "es"
+  }
+}
+
+docs {
+  Cross-pattern read over the last N dreams (or a dream-date range). Does not persist.
+  Alternative body using a date range instead of `limit`:
+  { "dreamDateFrom": "2026-08-01", "dreamDateTo": "2026-08-17", "locale": "es" }
+}

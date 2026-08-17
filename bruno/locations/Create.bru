@@ -1,0 +1,31 @@
+meta {
+  name: Create Location
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/locations
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "name": "Childhood house",
+    "description": "The house I grew up in, but with extra rooms.",
+    "isFamiliar": true,
+    "setting": "INDOOR",
+    "imageUri": ""
+  }
+}
+
+script:post-response {
+  if (res.body && res.body._id) {
+    bru.setEnvVar("locationId", res.body._id);
+  }
+}
+
+docs {
+  setting: URBAN | NATURE | INDOOR | ABSTRACT
+}

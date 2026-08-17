@@ -1,0 +1,16 @@
+meta {
+  name: List Characters
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/characters
+  body: none
+  auth: none
+}
+
+docs {
+  Optional query params: page, limit, name, nameExact, description, isKnown, archetype,
+  hasImage, createdFrom, createdTo, updatedFrom, updatedTo
+}

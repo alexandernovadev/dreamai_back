@@ -1,0 +1,17 @@
+meta {
+  name: Update Character
+  type: http
+  seq: 4
+}
+
+patch {
+  url: {{baseUrl}}/characters/{{characterId}}
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "description": "Updated description."
+  }
+}

@@ -1,0 +1,26 @@
+meta {
+  name: Upload Image
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/cloudinary/upload?context=dreams
+  body: multipartForm
+  auth: none
+}
+
+params:query {
+  context: dreams
+}
+
+body:multipart-form {
+  file: @file()
+}
+
+docs {
+  Multipart upload, field name must be `file`.
+  Query `context`: dreams (default) | characters | locations | objects.
+  Response: { publicId, secureUrl }.
+  In the Bruno GUI, click the file field and pick a local image to attach.
+}

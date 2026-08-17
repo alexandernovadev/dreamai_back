@@ -1,0 +1,17 @@
+meta {
+  name: Update Context Life
+  type: http
+  seq: 4
+}
+
+patch {
+  url: {{baseUrl}}/context-life/{{contextLifeId}}
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "description": "Updated description."
+  }
+}

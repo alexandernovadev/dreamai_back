@@ -1,0 +1,18 @@
+meta {
+  name: Update Dream Session
+  type: http
+  seq: 5
+}
+
+patch {
+  url: {{baseUrl}}/dream-sessions/{{dreamSessionId}}
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "status": "ELEMENTS",
+    "userThought": "Maybe this dream is about feeling unstable at home."
+  }
+}

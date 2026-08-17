@@ -1,0 +1,15 @@
+meta {
+  name: Get Dream Session (Hydrated)
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/dream-sessions/{{dreamSessionId}}/hydrated
+  body: none
+  auth: none
+}
+
+docs {
+  Session + resolved catalog entities in a single batched response (no N+1 on the client).
+}

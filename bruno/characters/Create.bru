@@ -1,0 +1,31 @@
+meta {
+  name: Create Character
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/characters
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "name": "The Shadow",
+    "description": "A recurring dark figure that chases me.",
+    "isKnown": false,
+    "archetype": "SHADOW",
+    "imageUri": ""
+  }
+}
+
+script:post-response {
+  if (res.body && res.body._id) {
+    bru.setEnvVar("characterId", res.body._id);
+  }
+}
+
+docs {
+  archetype: SHADOW | ANIMA_ANIMUS | WISE_FIGURE | PERSONA | UNKNOWN
+}

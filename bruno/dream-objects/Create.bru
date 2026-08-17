@@ -1,0 +1,25 @@
+meta {
+  name: Create Dream Object
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/dream-objects
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "name": "Golden key",
+    "description": "A small golden key that never fits any lock.",
+    "imageUri": ""
+  }
+}
+
+script:post-response {
+  if (res.body && res.body._id) {
+    bru.setEnvVar("dreamObjectId", res.body._id);
+  }
+}

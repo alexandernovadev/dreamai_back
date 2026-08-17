@@ -1,0 +1,17 @@
+meta {
+  name: Update Feeling
+  type: http
+  seq: 4
+}
+
+patch {
+  url: {{baseUrl}}/feelings/{{feelingId}}
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "intensity": 5
+  }
+}

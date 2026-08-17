@@ -1,0 +1,16 @@
+meta {
+  name: List Dream Sessions
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/dream-sessions
+  body: none
+  auth: none
+}
+
+docs {
+  Optional query params: page, limit, status, rawNarrative, dreamKind,
+  timestampFrom, timestampTo, createdFrom, createdTo
+}

@@ -1,0 +1,6 @@
+{
+  "version": "1",
+  "name": "Dreamia Back",
+  "type": "collection",
+  "ignore": ["node_modules", ".git"]
+}

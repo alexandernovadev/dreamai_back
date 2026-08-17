@@ -1,0 +1,17 @@
+meta {
+  name: Update Dream Object
+  type: http
+  seq: 4
+}
+
+patch {
+  url: {{baseUrl}}/dream-objects/{{dreamObjectId}}
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "description": "Updated description."
+  }
+}

@@ -1,0 +1,21 @@
+meta {
+  name: AI - Suggest Thought
+  type: http
+  seq: 10
+}
+
+post {
+  url: {{baseUrl}}/dream-sessions/{{dreamSessionId}}/ai/suggest-thought
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "locale": "es"
+  }
+}
+
+docs {
+  Suggested reading from `rawNarrative` + `userThought` (if present). Does not persist.
+}
