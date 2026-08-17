@@ -198,13 +198,17 @@ export class DreamSessionService {
         this.findLeanByIds(
           this.characterModel,
           charIds,
-          '_id name description',
+          '_id name description imageUri',
         ),
-        this.findLeanByIds(this.locationModel, locIds, '_id name description'),
+        this.findLeanByIds(
+          this.locationModel,
+          locIds,
+          '_id name description imageUri',
+        ),
         this.findLeanByIds(
           this.dreamObjectModel,
           objIds,
-          '_id name description',
+          '_id name description imageUri',
         ),
         this.findLeanByIds(
           this.contextLifeModel,
@@ -229,10 +233,15 @@ export class DreamSessionService {
         id: string;
         name: string;
         description?: string;
+        imageUri?: string;
       } = { id: oid, name: String(d.name) };
       const desc = d.description;
       if (desc !== undefined && desc !== null && String(desc).trim() !== '') {
         row.description = String(desc).slice(0, 5000);
+      }
+      const img = d.imageUri;
+      if (img !== undefined && img !== null && String(img).trim() !== '') {
+        row.imageUri = String(img);
       }
       return [oid, row];
     });
@@ -242,10 +251,15 @@ export class DreamSessionService {
         id: string;
         name: string;
         description?: string;
+        imageUri?: string;
       } = { id: oid, name: String(d.name) };
       const desc = d.description;
       if (desc !== undefined && desc !== null && String(desc).trim() !== '') {
         row.description = String(desc).slice(0, 5000);
+      }
+      const img = d.imageUri;
+      if (img !== undefined && img !== null && String(img).trim() !== '') {
+        row.imageUri = String(img);
       }
       return [oid, row];
     });
@@ -255,10 +269,15 @@ export class DreamSessionService {
         id: string;
         name: string;
         description?: string;
+        imageUri?: string;
       } = { id: oid, name: String(d.name) };
       const desc = d.description;
       if (desc !== undefined && desc !== null && String(desc).trim() !== '') {
         row.description = String(desc).slice(0, 5000);
+      }
+      const img = d.imageUri;
+      if (img !== undefined && img !== null && String(img).trim() !== '') {
+        row.imageUri = String(img);
       }
       return [oid, row];
     });

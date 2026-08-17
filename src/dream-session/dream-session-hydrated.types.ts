@@ -4,13 +4,16 @@ export type HydratedDreamSessionPayload = {
   hydrated: {
     characters: Record<
       string,
-      { id: string; name: string; description?: string }
+      { id: string; name: string; description?: string; imageUri?: string }
     >;
     locations: Record<
       string,
-      { id: string; name: string; description?: string }
+      { id: string; name: string; description?: string; imageUri?: string }
     >;
-    objects: Record<string, { id: string; name: string; description?: string }>;
+    objects: Record<
+      string,
+      { id: string; name: string; description?: string; imageUri?: string }
+    >;
     contextLife: Record<
       string,
       { id: string; title: string; description?: string }
